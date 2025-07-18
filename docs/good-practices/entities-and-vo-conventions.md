@@ -1,12 +1,17 @@
-────────────────────────────────────────
-📘 Pocket Guide  
-Value Objects & Entities  
-(DDD + TypeScript / NestJS Edition)
-────────────────────────────────────────
-Crafted by **Kewin Caviedes** 🧑‍💻  
-v1.0 ‑ July 18, 2025  
-For: backend engineers, architects, code-review heroes  
-────────────────────────────────────────
+# 📘 Pocket Guide  
+**Value Objects & Entities**  
+*TypeScript / NestJS Edition*
+
+---
+
+| | |
+|---|---|
+| **Author** | Kewin Caviedes 🧑‍💻 |
+| **Version** | 1.0 ‑ July 18 2025 |
+| **Audience** | Backend engineers, architects, code-review heroes |
+
+---
+
 
 1. Purpose  
 This document defines the canonical way to implement **Value Objects (VO)** and **Aggregates / Entities** in our codebase.  
@@ -16,11 +21,11 @@ Following these rules guarantees:
 • Zero leakage of infrastructure concerns into the Domain layer  
 • Easy refactoring when business rules evolve  
 
-2. Definitions (quick recap)  
+1. Definitions (quick recap)  
 • **Value Object** – an immutable object whose identity is determined solely by the value of its attributes (e.g. Email, Money).  
 • **Entity** – an object whose identity is stable through time and is defined by an Id rather than attributes (e.g. User, Invoice).  
 
-3. Value Object Checklist  
+1. Value Object Checklist  
 
 | Rule | How to comply | Example |
 |---|---|---|
