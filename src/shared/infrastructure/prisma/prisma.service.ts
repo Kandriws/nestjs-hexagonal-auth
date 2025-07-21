@@ -4,8 +4,8 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { PrismaClient } from '../../generated/prisma';
-import { envs } from '../shared/infrastructure/config/env.config';
+import { PrismaClient } from '../../../../generated/prisma';
+import { envs } from '../config/env.config';
 
 @Injectable()
 export class PrismaService

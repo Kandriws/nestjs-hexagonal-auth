@@ -1,7 +1,27 @@
 import { Module } from '@nestjs/common';
+import { AuthController } from './presentation/http/controllers/auth.controller';
+import { RegisterUserPort } from './domain/ports/inbound/register-user.port';
+import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
+import { UserRepositoryPort } from './domain/ports/outbound/persistence/user.repository.port';
+import { PrismaUserRepositoryAdapter } from './infrastructure/adapters/outbound/persistence/prisma-user.repository.adapter';
+import { UUIDPort } from './domain/ports/outbound/security/uuid.port';
+import { CryptoUUIDAdapter } from './infrastructure/adapters/outbound/security/crypto-uuid.adapter';
 
 @Module({
-  controllers: [],
-  providers: [],
+  controllers: [AuthController],
+  providers: [
+    {
+      provide: RegisterUserPort,
+      useClass: RegisterUserUseCase,
+    },
+    {
+      provide: UserRepositoryPort,
+      useClass: PrismaUserRepositoryAdapter,
+    },
+    {
+      provide: UUIDPort,
+      useClass: CryptoUUIDAdapter,
+    },
+  ],
 })
 export class AuthModule {}
