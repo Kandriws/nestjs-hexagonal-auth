@@ -14,10 +14,10 @@ export class PrismaUserMapper {
   static toPersistence(user: User): any {
     return {
       id: user.id,
-      email: user.email,
-      password: user.password,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: user.email.getValue(),
+      password: user.password.getValue(),
+      firstName: user.firstName.getValue(),
+      lastName: user.lastName.getValue(),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

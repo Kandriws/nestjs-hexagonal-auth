@@ -1,7 +1,9 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { RegisterUserDto } from '../dtos';
+import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { RegisterUserDto, RegisterUserResponseDto } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import { RegisterUserMapper } from '../mappers';
+import { BaseResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
+import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -11,8 +13,14 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  async register(@Body() dto: RegisterUserDto): Promise<void> {
+  @HttpCode(HttpStatus.CREATED)
+  async register(
+    @Body() dto: RegisterUserDto,
+  ): Promise<BaseResponse<RegisterUserResponseDto>> {
     const command = RegisterUserMapper.toCommand(dto);
-    return this.registerUserPort.execute(command);
+    await this.registerUserPort.execute(command);
+    return ResponseFactory.created<RegisterUserResponseDto>({
+      message: 'User registered successfully',
+    });
   }
 }

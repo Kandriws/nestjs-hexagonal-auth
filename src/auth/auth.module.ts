@@ -6,8 +6,10 @@ import { UserRepositoryPort } from './domain/ports/outbound/persistence/user.rep
 import { PrismaUserRepositoryAdapter } from './infrastructure/adapters/outbound/persistence/prisma-user.repository.adapter';
 import { UUIDPort } from './domain/ports/outbound/security/uuid.port';
 import { CryptoUUIDAdapter } from './infrastructure/adapters/outbound/security/crypto-uuid.adapter';
+import { PrismaModule } from 'src/shared/infrastructure/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [AuthController],
   providers: [
     {
