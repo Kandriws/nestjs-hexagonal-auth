@@ -4,12 +4,16 @@ import { RegisterUserPort } from './domain/ports/inbound/register-user.port';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { UserRepositoryPort } from './domain/ports/outbound/persistence/user.repository.port';
 import { PrismaUserRepositoryAdapter } from './infrastructure/adapters/outbound/persistence/prisma-user.repository.adapter';
-import { UUIDPort } from './domain/ports/outbound/security/uuid.port';
-import { CryptoUUIDAdapter } from './infrastructure/adapters/outbound/security/crypto-uuid.adapter';
 import { PrismaModule } from 'src/shared/infrastructure/prisma/prisma.module';
+import { HasherPort, UUIDPort } from './domain/ports/outbound/security';
+import {
+  BcryptHasherAdapter,
+  CryptoUUIDAdapter,
+} from './infrastructure/adapters/outbound/security';
+import { ConfigModule } from '@nestjs/config';
+import securityConfig from 'src/shared/infrastructure/config/security.config';
 
 @Module({
-  imports: [PrismaModule],
   controllers: [AuthController],
   providers: [
     {
@@ -24,6 +28,11 @@ import { PrismaModule } from 'src/shared/infrastructure/prisma/prisma.module';
       provide: UUIDPort,
       useClass: CryptoUUIDAdapter,
     },
+    {
+      provide: HasherPort,
+      useClass: BcryptHasherAdapter,
+    },
   ],
+  imports: [PrismaModule, ConfigModule.forFeature(securityConfig)],
 })
 export class AuthModule {}

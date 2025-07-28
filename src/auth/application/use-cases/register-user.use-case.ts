@@ -4,6 +4,7 @@ import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
 import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register.command';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
+import { HasherPort } from 'src/auth/domain/ports/outbound/security';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
 import { UserId } from 'src/shared/domain/types';
 
@@ -13,6 +14,8 @@ export class RegisterUserUseCase implements RegisterUserPort {
     private readonly userRepository: UserRepositoryPort,
     @Inject(UUIDPort)
     private readonly uuid: UUIDPort,
+    @Inject(HasherPort)
+    private readonly hasher: HasherPort,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<void> {
@@ -25,7 +28,7 @@ export class RegisterUserUseCase implements RegisterUserPort {
     const user = User.create({
       id: this.uuid.generate() as UserId,
       email: command.email,
-      password: command.password,
+      password: await this.hasher.hash(command.password),
       firstName: command.firstName,
       lastName: command.lastName,
     });

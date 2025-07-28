@@ -44,6 +44,9 @@ interface EnvConfig {
     isDevelopment: boolean;
     isTest: boolean;
   };
+  security: {
+    saltRounds: number;
+  };
   database: {
     url: string;
     host: string;
@@ -70,6 +73,9 @@ const envVarsSchema = joi
       .required(),
     HOST: joi.string().default('localhost'),
     PORT: joi.number().default(3000),
+
+    // Security
+    SALT_ROUNDS: joi.number().default(10).description('Bcrypt salt rounds'),
 
     // Database - Postgresql
     DATABASE_URL: joi.string().description('Full PostgreSQL connection URL'),
@@ -114,6 +120,9 @@ export const envs: EnvConfig = {
     isProduction: value.NODE_ENV === 'production',
     isDevelopment: value.NODE_ENV === 'development',
     isTest: value.NODE_ENV === 'test',
+  },
+  security: {
+    saltRounds: value.SALT_ROUNDS,
   },
   database: {
     url: value.DATABASE_URL,

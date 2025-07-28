@@ -1,4 +1,4 @@
-export const UUIDPort = 'UUIDPort';
+export const UUIDPort = Symbol('UUIDPort');
 export interface UUIDPort {
   generate(): string;
 }
