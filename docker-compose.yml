@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest-auth-api-dev
+    ports:
+      - '${PORT:-3000}:3000'
+    depends_on:
+      - postgres
+    networks:
+      - nest-network
+    restart: always
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    # This will run migrations in development mode
+    command: sh -c "npx prisma migrate dev --name auto-migration && npm run start:dev"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: nest-auth-db-dev
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - nest-network
+    restart: always
+
+volumes:
+  postgres_data_dev:
+
+networks:
+  nest-network:
+    driver: bridge
