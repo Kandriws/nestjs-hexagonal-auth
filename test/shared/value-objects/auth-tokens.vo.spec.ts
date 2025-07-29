@@ -1,5 +1,5 @@
 import { MissingAuthTokensException } from 'src/shared/domain/exceptions/missing-auth-tokens.exception';
-import { AuthTokensVo } from 'src/shared/domain/value-objects/auth-tokens.vo';
+import { AuthTokensVo } from 'src/auth/domain/value-objects/auth-tokens.vo';
 
 describe('AuthTokensVo', () => {
   it('should create a valid AuthTokensVo', () => {

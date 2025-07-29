@@ -44,8 +44,27 @@ interface EnvConfig {
     isDevelopment: boolean;
     isTest: boolean;
   };
+  mail: {
+    host: string;
+    port: number;
+    secure: boolean;
+    auth: {
+      user: string;
+      pass: string;
+    };
+    from: string;
+    fromName: string;
+  };
   security: {
     saltRounds: number;
+    otp: {
+      email: {
+        ttl: number;
+      };
+      sms: {
+        ttl: number;
+      };
+    };
   };
   database: {
     url: string;
@@ -74,8 +93,25 @@ const envVarsSchema = joi
     HOST: joi.string().default('localhost'),
     PORT: joi.number().default(3000),
 
+    // Mailer
+    MAIL_HOST: joi.string().required(),
+    MAIL_PORT: joi.number().default(587),
+    MAIL_SECURE: joi.string().valid('true', 'false').default('false'),
+    MAIL_USER: joi.string().required(),
+    MAIL_PASS: joi.string().required(),
+    MAIL_FROM_EMAIL: joi.string().email().required(),
+    MAIL_FROM_NAME: joi.string().default('No Reply'),
+
     // Security
     SALT_ROUNDS: joi.number().default(10).description('Bcrypt salt rounds'),
+    OTP_TTL_EMAIL: joi
+      .number()
+      .default(10)
+      .description('OTP TTL for email in minutes'),
+    OTP_TTL_SMS: joi
+      .number()
+      .default(5)
+      .description('OTP TTL for SMS in minutes'),
 
     // Database - Postgresql
     DATABASE_URL: joi.string().description('Full PostgreSQL connection URL'),
@@ -121,8 +157,27 @@ export const envs: EnvConfig = {
     isDevelopment: value.NODE_ENV === 'development',
     isTest: value.NODE_ENV === 'test',
   },
+  mail: {
+    host: value.MAIL_HOST,
+    port: Number(value.MAIL_PORT),
+    secure: value.MAIL_SECURE === 'true',
+    auth: {
+      user: value.MAIL_USER,
+      pass: value.MAIL_PASS,
+    },
+    from: value.MAIL_FROM_EMAIL,
+    fromName: value.MAIL_FROM_NAME,
+  },
   security: {
     saltRounds: value.SALT_ROUNDS,
+    otp: {
+      email: {
+        ttl: value.OTP_TTL_EMAIL,
+      },
+      sms: {
+        ttl: value.OTP_TTL_SMS,
+      },
+    },
   },
   database: {
     url: value.DATABASE_URL,

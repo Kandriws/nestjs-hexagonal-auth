@@ -1,6 +1,6 @@
-import { MissingAuthTokensException } from '../exceptions/missing-auth-tokens.exception';
-import { AccessToken } from '../types';
-import { RefreshToken } from '../types/refresh-token.type';
+import { MissingAuthTokensException } from '../../../shared/domain/exceptions/missing-auth-tokens.exception';
+import { AccessToken } from '../../../shared/domain/types';
+import { RefreshToken } from '../../../shared/domain/types/refresh-token.type';
 
 export class AuthTokensVo {
   private constructor(
