@@ -10,8 +10,10 @@ export class OtpCodeVo {
   }
 
   private static validate(value: string): void {
-    if (!/^\d{6}$/.test(value)) {
-      throw new InvalidOtpCodeException('OTP code must be a 6-digit number');
+    if (!/^[a-zA-Z0-9]{6}$/.test(value)) {
+      throw new InvalidOtpCodeException(
+        'OTP code must be a 6-character string (letters, numbers, or both)',
+      );
     }
   }
 

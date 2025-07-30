@@ -1,6 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { Otp } from 'src/auth/domain/entities';
 import { User } from 'src/auth/domain/entities/user.entity';
+import { OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
 import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
 import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register.command';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
@@ -50,15 +51,19 @@ export class RegisterUserUseCase implements RegisterUserPort {
       firstName: command.firstName,
       lastName: command.lastName,
     });
+    const channel: OtpChannel = OtpChannel.EMAIL;
+    const purpose: OtpPurpose = OtpPurpose.EMAIL_VERIFICATION;
 
     const otpCode = await this.otpGenerator.generate();
-    const ttl = this.otpPolicy.ttlMinutes('EMAIL');
+    const ttl = this.otpPolicy.ttlMinutes(channel);
 
     const otpEntity = Otp.create({
       id: this.uuid.generate(),
       userId: user.id,
       code: OtpCodeVo.of(otpCode),
       expiresAt: new Date(Date.now() + ttl * 60 * 1000),
+      channel,
+      purpose,
     });
 
     const otpTemplate = this.generateOtpTemplate(otpCode, ttl);

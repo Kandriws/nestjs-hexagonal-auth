@@ -1,5 +1,5 @@
 export enum TwoFactorMethod {
-  TOTP = 'totp', // Time-based One-Time Password (e.g., Google Authenticator, Authy)
-  EMAIL_OTP = 'email_otp', // One-Time Password sent via Email
-  SMS_OTP = 'sms_otp', // One-Time Password sent via SMS
+  TOTP = 'TOTP', // Time-based One-Time Password (e.g., Google Authenticator, Authy)
+  EMAIL_OTP = 'EMAIL_OTP', // One-Time Password sent via Email
+  SMS_OTP = 'SMS_OTP', // One-Time Password sent via SMS
 }
