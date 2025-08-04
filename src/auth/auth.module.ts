@@ -26,6 +26,8 @@ import securityConfig from 'src/shared/infrastructure/config/security.config';
 import { OtpPolicyPort } from './domain/ports/outbound/policy';
 import { OtpPolicyAdapter } from './infrastructure/adapters/outbound/policy/otp-policy.adapter';
 import { SharedModule } from 'src/shared/shared.module';
+import { OtpNotificationPort } from './domain/ports/outbound/notification';
+import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
 
 @Module({
   controllers: [AuthController],
@@ -57,6 +59,10 @@ import { SharedModule } from 'src/shared/shared.module';
     {
       provide: OtpPolicyPort,
       useClass: OtpPolicyAdapter,
+    },
+    {
+      provide: OtpNotificationPort,
+      useClass: OtpNotificationSenderAdapter,
     },
   ],
   imports: [

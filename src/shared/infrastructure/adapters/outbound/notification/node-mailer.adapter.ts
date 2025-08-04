@@ -16,7 +16,7 @@ export class NodeMailerAdapter implements MailerPort {
   ) {
     this.transporter = nodemailer.createTransport(config);
   }
-  async sendEmail(dto: SendMailDto): Promise<void> {
+  async send(dto: SendMailDto): Promise<void> {
     const mailOptions = {
       from: this.config.from,
       to: this.toAddressString(dto.to),

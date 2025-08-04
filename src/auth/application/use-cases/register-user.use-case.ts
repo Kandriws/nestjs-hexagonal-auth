@@ -5,6 +5,10 @@ import { OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
 import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
 import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register.command';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
+import {
+  OtpNotificationContext,
+  OtpNotificationPort,
+} from 'src/auth/domain/ports/outbound/notification';
 import { OtpRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/otp.repository.port';
 import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
 import { OtpPolicyPort } from 'src/auth/domain/ports/outbound/policy/otp-policy.port';
@@ -14,8 +18,6 @@ import {
 } from 'src/auth/domain/ports/outbound/security';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
 import { OtpCodeVo } from 'src/auth/domain/value-objects/otp-code.vo';
-import { SendMailDto } from 'src/shared/domain/dtos';
-import { MailerPort } from 'src/shared/domain/ports/outbound/notification/mailer.port';
 import { UserId } from 'src/shared/domain/types';
 import { MailerEmailVo } from 'src/shared/domain/value-objects';
 
@@ -33,8 +35,8 @@ export class RegisterUserUseCase implements RegisterUserPort {
     private readonly otpRepository: OtpRepositoryPort,
     @Inject(OtpPolicyPort)
     private readonly otpPolicy: OtpPolicyPort,
-    @Inject(MailerPort)
-    private readonly mailer: MailerPort,
+    @Inject(OtpNotificationPort)
+    private readonly otpNotification: OtpNotificationPort,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<void> {
@@ -66,27 +68,20 @@ export class RegisterUserUseCase implements RegisterUserPort {
       purpose,
     });
 
-    const otpTemplate = this.generateOtpTemplate(otpCode, ttl);
-
-    const sendMailDto: SendMailDto = {
-      to: [MailerEmailVo.of(command.email)],
-      subject: 'Your OTP Code',
-      body: otpTemplate,
-      attachments: [],
-      cc: [],
+    const context: OtpNotificationContext = {
+      purpose,
+      code: OtpCodeVo.of(otpCode),
+      ttl,
     };
 
-    await this.userRepository.save(user);
-    await this.otpRepository.save(otpEntity);
-    await this.mailer.sendEmail(sendMailDto);
-  }
-
-  private generateOtpTemplate(otpCode: string, ttl: number): string {
-    return `
-      <h1>Your OTP Code</h1>
-      <p>Please use the following code to complete your registration:</p>
-      <h2>${otpCode}</h2>
-      <p>This code is valid for ${ttl} minutes.</p>
-    `;
+    await Promise.all([
+      this.userRepository.save(user),
+      this.otpRepository.save(otpEntity),
+      this.otpNotification.send(
+        channel,
+        [MailerEmailVo.of(command.email)],
+        context,
+      ),
+    ]);
   }
 }

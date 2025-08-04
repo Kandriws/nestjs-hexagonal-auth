@@ -9,18 +9,6 @@ import { OtpCodeVo } from 'src/auth/domain/value-objects/otp-code.vo';
 import { UserId } from 'src/shared/domain/types';
 
 export class PrismaOtpMapper {
-  private static readonly channelMap: Record<PrismaOtpChannel, OtpChannel> = {
-    [PrismaOtpChannel.EMAIL]: OtpChannel.EMAIL,
-    [PrismaOtpChannel.SMS]: OtpChannel.SMS,
-  };
-
-  private static readonly purposeMap: Record<PrismaOtpPurpose, OtpPurpose> = {
-    [PrismaOtpPurpose.EMAIL_VERIFICATION]: OtpPurpose.EMAIL_VERIFICATION,
-    [PrismaOtpPurpose.PASSWORD_RESET]: OtpPurpose.PASSWORD_RESET,
-    [PrismaOtpPurpose.TWO_FACTOR_AUTHENTICATION]:
-      OtpPurpose.TWO_FACTOR_AUTHENTICATION,
-  };
-
   static toDomain(prismaOtpRecord: PrismaOtp): Otp {
     return Otp.reconstitute({
       id: prismaOtpRecord.id,
@@ -35,18 +23,47 @@ export class PrismaOtpMapper {
     });
   }
 
-  // TODO:: Check the mapper for the correct conversion from domain to Prisma model
   static toPersistence(otp: Otp): PrismaOtp {
     return {
       id: otp.id,
       userId: otp.userId,
       code: otp.code.getValue(),
-      channel: PrismaOtpChannel[otp.channel],
-      purpose: PrismaOtpPurpose[otp.purpose],
+      channel: this.prismaOtpChannelMap[otp.channel],
+      purpose: this.prismaOtpPurposeMap[otp.purpose],
       usedAt: otp.usedAt,
       createdAt: otp.createdAt,
       updatedAt: otp.updatedAt,
       expiresAt: otp.expiresAt,
     };
   }
+
+  private static readonly channelMap: Record<PrismaOtpChannel, OtpChannel> = {
+    [PrismaOtpChannel.EMAIL]: OtpChannel.EMAIL,
+    [PrismaOtpChannel.SMS]: OtpChannel.SMS,
+  };
+
+  private static readonly purposeMap: Record<PrismaOtpPurpose, OtpPurpose> = {
+    [PrismaOtpPurpose.EMAIL_VERIFICATION]: OtpPurpose.EMAIL_VERIFICATION,
+    [PrismaOtpPurpose.PASSWORD_RESET]: OtpPurpose.PASSWORD_RESET,
+    [PrismaOtpPurpose.TWO_FACTOR_AUTHENTICATION]:
+      OtpPurpose.TWO_FACTOR_AUTHENTICATION,
+  };
+
+  private static readonly prismaOtpChannelMap: Record<
+    OtpChannel,
+    PrismaOtpChannel
+  > = {
+    [OtpChannel.EMAIL]: PrismaOtpChannel.EMAIL,
+    [OtpChannel.SMS]: PrismaOtpChannel.SMS,
+  };
+
+  private static readonly prismaOtpPurposeMap: Record<
+    OtpPurpose,
+    PrismaOtpPurpose
+  > = {
+    [OtpPurpose.EMAIL_VERIFICATION]: PrismaOtpPurpose.EMAIL_VERIFICATION,
+    [OtpPurpose.PASSWORD_RESET]: PrismaOtpPurpose.PASSWORD_RESET,
+    [OtpPurpose.TWO_FACTOR_AUTHENTICATION]:
+      PrismaOtpPurpose.TWO_FACTOR_AUTHENTICATION,
+  };
 }
