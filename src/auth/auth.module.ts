@@ -28,6 +28,8 @@ import { OtpPolicyAdapter } from './infrastructure/adapters/outbound/policy/otp-
 import { SharedModule } from 'src/shared/shared.module';
 import { OtpNotificationPort } from './domain/ports/outbound/notification';
 import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
+import { VerifyUserRegistrationPort } from './domain/ports/inbound';
+import { VerifyUserRegistrationUseCase } from './application/use-cases/verify-user-registration.use-case';
 
 @Module({
   controllers: [AuthController],
@@ -35,6 +37,10 @@ import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound
     {
       provide: RegisterUserPort,
       useClass: RegisterUserUseCase,
+    },
+    {
+      provide: VerifyUserRegistrationPort,
+      useClass: VerifyUserRegistrationUseCase,
     },
     {
       provide: UserRepositoryPort,

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Otp } from 'src/auth/domain/entities';
+
 import { OtpRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/otp.repository.port';
 import { PrismaService } from 'src/shared/infrastructure/prisma/prisma.service';
 import { PrismaOtpMapper } from './mappers/prisma-otp.mapper';
@@ -8,7 +9,7 @@ import {
   PersistenceInfrastructureException,
 } from 'src/auth/domain/exceptions';
 import { UserId } from 'src/shared/domain/types';
-import { OtpCodeVo } from 'src/auth/domain/value-objects/otp-code.vo';
+import { OtpCode } from 'src/auth/domain/types';
 
 @Injectable()
 export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
@@ -32,10 +33,10 @@ export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
 
   async findByUserIdAndCode(
     userId: UserId,
-    code: OtpCodeVo,
+    otpCode: OtpCode,
   ): Promise<Otp | null> {
     const record = await this.prismaService.otp.findFirst({
-      where: { userId: userId, code: code.getValue() },
+      where: { userId: userId, code: otpCode },
     });
     return record ? PrismaOtpMapper.toDomain(record) : null;
   }

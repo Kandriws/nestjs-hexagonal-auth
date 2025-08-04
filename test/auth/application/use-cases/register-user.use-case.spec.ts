@@ -3,7 +3,7 @@ import { RegisterUserUseCase } from '../../../../src/auth/application/use-cases/
 import { UserRepositoryPort } from '../../../../src/auth/domain/ports/outbound/persistence/user.repository.port';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
 import { UserId } from 'src/shared/domain/types';
-import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register.command';
+import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register-user.command';
 import { User } from 'src/auth/domain/entities';
 
 describe('RegisterUserUseCase', () => {
