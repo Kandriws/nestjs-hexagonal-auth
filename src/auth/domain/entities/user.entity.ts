@@ -25,7 +25,9 @@ export class User {
       updatedAt: now,
     });
   }
-
+  static reconstitute(snap: UserSnapshotType): User {
+    return new User(snap);
+  }
   get id() {
     return this.snap.id;
   }
@@ -44,6 +46,10 @@ export class User {
 
   get lastName() {
     return this.snap.lastName;
+  }
+
+  get verifiedAt() {
+    return this.snap.verifiedAt;
   }
 
   get createdAt() {
