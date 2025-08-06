@@ -12,6 +12,7 @@ interface OtpProps {
   channel: OtpChannel;
   purpose: OtpPurpose;
   usedAt: Date | null;
+  revokedAt?: Date | null;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +44,7 @@ export class Otp extends Entity<OtpProps> {
       channel,
       purpose,
       usedAt: null,
+      revokedAt: null,
       expiresAt,
       createdAt,
       updatedAt: createdAt,
@@ -73,6 +75,10 @@ export class Otp extends Entity<OtpProps> {
     return this.props.usedAt;
   }
 
+  get revokedAt() {
+    return this.props.revokedAt;
+  }
+
   get createdAt() {
     return this.props.createdAt;
   }
@@ -89,6 +95,10 @@ export class Otp extends Entity<OtpProps> {
     return new Date() > this.expiresAt;
   }
 
+  isRevoked(): boolean {
+    return this.props.revokedAt !== null;
+  }
+
   isUsed(): boolean {
     return this.usedAt !== null;
   }
@@ -97,6 +107,14 @@ export class Otp extends Entity<OtpProps> {
     return new Otp({
       ...this.props,
       usedAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  markAsRevoked(): Otp {
+    return new Otp({
+      ...this.props,
+      revokedAt: new Date(),
       updatedAt: new Date(),
     });
   }

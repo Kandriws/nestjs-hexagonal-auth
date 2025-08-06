@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './presentation/http/controllers/auth.controller';
-import { RegisterUserPort } from './domain/ports/inbound/register-user.port';
-import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { PrismaModule } from 'src/shared/infrastructure/prisma/prisma.module';
 import {
   OtpRepositoryPort,
@@ -23,13 +21,28 @@ import {
   OtpGeneratorAdapter,
 } from './infrastructure/adapters/outbound/security';
 import securityConfig from 'src/shared/infrastructure/config/security.config';
-import { OtpPolicyPort } from './domain/ports/outbound/policy';
-import { OtpPolicyAdapter } from './infrastructure/adapters/outbound/policy/otp-policy.adapter';
+import {
+  OtpPolicyPort,
+  OtpRateLimitPort,
+} from './domain/ports/outbound/policy';
 import { SharedModule } from 'src/shared/shared.module';
 import { OtpNotificationPort } from './domain/ports/outbound/notification';
 import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
-import { VerifyUserRegistrationPort } from './domain/ports/inbound';
-import { VerifyUserRegistrationUseCase } from './application/use-cases/verify-user-registration.use-case';
+import {
+  RegisterUserPort,
+  ResendRegistrationOtpPort,
+  VerifyUserRegistrationPort,
+} from './domain/ports/inbound';
+
+import {
+  OtpPolicyAdapter,
+  PrismaOtpRateLimitAdapter,
+} from './infrastructure/adapters/outbound/policy';
+import {
+  RegisterUserUseCase,
+  ResendRegistrationOtpUseCase,
+  VerifyUserRegistrationUseCase,
+} from './application/use-cases';
 
 @Module({
   controllers: [AuthController],
@@ -41,6 +54,10 @@ import { VerifyUserRegistrationUseCase } from './application/use-cases/verify-us
     {
       provide: VerifyUserRegistrationPort,
       useClass: VerifyUserRegistrationUseCase,
+    },
+    {
+      provide: ResendRegistrationOtpPort,
+      useClass: ResendRegistrationOtpUseCase,
     },
     {
       provide: UserRepositoryPort,
@@ -65,6 +82,10 @@ import { VerifyUserRegistrationUseCase } from './application/use-cases/verify-us
     {
       provide: OtpPolicyPort,
       useClass: OtpPolicyAdapter,
+    },
+    {
+      provide: OtpRateLimitPort,
+      useClass: PrismaOtpRateLimitAdapter,
     },
     {
       provide: OtpNotificationPort,

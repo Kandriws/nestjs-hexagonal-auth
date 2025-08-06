@@ -17,6 +17,7 @@ export class PrismaOtpMapper {
       channel: this.channelMap[prismaOtpRecord.channel],
       purpose: this.purposeMap[prismaOtpRecord.purpose],
       usedAt: prismaOtpRecord.usedAt,
+      revokedAt: prismaOtpRecord.revokedAt,
       expiresAt: new Date(prismaOtpRecord.expiresAt),
       createdAt: new Date(prismaOtpRecord.createdAt),
       updatedAt: new Date(prismaOtpRecord.updatedAt),
@@ -31,6 +32,7 @@ export class PrismaOtpMapper {
       channel: this.prismaOtpChannelMap[otp.channel],
       purpose: this.prismaOtpPurposeMap[otp.purpose],
       usedAt: otp.usedAt,
+      revokedAt: otp.revokedAt,
       createdAt: otp.createdAt,
       updatedAt: otp.updatedAt,
       expiresAt: otp.expiresAt,
@@ -66,4 +68,8 @@ export class PrismaOtpMapper {
     [OtpPurpose.TWO_FACTOR_AUTHENTICATION]:
       PrismaOtpPurpose.TWO_FACTOR_AUTHENTICATION,
   };
+
+  static convertDomainPurposeToPrisma(purpose: OtpPurpose): PrismaOtpPurpose {
+    return this.prismaOtpPurposeMap[purpose];
+  }
 }

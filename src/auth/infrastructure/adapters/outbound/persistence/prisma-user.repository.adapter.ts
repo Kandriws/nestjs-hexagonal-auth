@@ -3,6 +3,7 @@ import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/u
 import { PrismaService } from 'src/shared/infrastructure/prisma/prisma.service';
 import { PrismaUserMapper } from './mappers/prisma-user.mapper';
 import { Inject } from '@nestjs/common';
+import { Email } from 'src/shared/domain/types';
 
 export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
   constructor(
@@ -10,7 +11,7 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
     private readonly prismaService: PrismaService,
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: Email): Promise<User | null> {
     const user = await this.prismaService.user.findUnique({
       where: { email },
     });
