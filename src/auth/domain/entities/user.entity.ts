@@ -8,8 +8,6 @@ interface CreateUserProps {
   password: string;
   firstName: string;
   lastName: string;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export class User {
@@ -23,11 +21,13 @@ export class User {
       password: PasswordVo.of(props.password),
       firstName: NameVo.of(props.firstName),
       lastName: NameVo.of(props.lastName),
-      createdAt: props.createdAt || now,
-      updatedAt: props.updatedAt || now,
+      createdAt: now,
+      updatedAt: now,
     });
   }
-
+  static reconstitute(snap: UserSnapshotType): User {
+    return new User(snap);
+  }
   get id() {
     return this.snap.id;
   }
@@ -48,12 +48,24 @@ export class User {
     return this.snap.lastName;
   }
 
+  get verifiedAt() {
+    return this.snap.verifiedAt;
+  }
+
   get createdAt() {
     return this.snap.createdAt;
   }
 
   get updatedAt() {
     return this.snap.updatedAt;
+  }
+
+  markAsVerified(): User {
+    return new User({
+      ...this.snap,
+      verifiedAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
   equals(other: User): boolean {

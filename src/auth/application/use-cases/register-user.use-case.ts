@@ -3,8 +3,10 @@ import { Otp } from 'src/auth/domain/entities';
 import { User } from 'src/auth/domain/entities/user.entity';
 import { OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
 import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
-import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register.command';
-import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
+import {
+  RegisterUserCommand,
+  RegisterUserPort,
+} from 'src/auth/domain/ports/inbound';
 import {
   OtpNotificationContext,
   OtpNotificationPort,
@@ -74,14 +76,12 @@ export class RegisterUserUseCase implements RegisterUserPort {
       ttl,
     };
 
-    await Promise.all([
-      this.userRepository.save(user),
-      this.otpRepository.save(otpEntity),
-      this.otpNotification.send(
-        channel,
-        [MailerEmailVo.of(command.email)],
-        context,
-      ),
-    ]);
+    await this.userRepository.save(user);
+    await this.otpRepository.save(otpEntity);
+    await this.otpNotification.send(
+      channel,
+      [MailerEmailVo.of(command.email)],
+      context,
+    );
   }
 }

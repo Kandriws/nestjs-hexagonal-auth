@@ -1,4 +1,4 @@
-import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register.command';
+import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register-user.command';
 import { RegisterUserDto } from '../dtos/register-user.dto';
 
 export class RegisterUserMapper {
