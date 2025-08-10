@@ -60,6 +60,10 @@ export class User {
     return this.snap.updatedAt;
   }
 
+  isVerified(): boolean {
+    return this.snap.verifiedAt !== null;
+  }
+
   markAsVerified(): User {
     return new User({
       ...this.snap,

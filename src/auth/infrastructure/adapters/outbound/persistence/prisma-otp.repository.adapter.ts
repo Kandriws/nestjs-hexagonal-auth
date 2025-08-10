@@ -10,6 +10,7 @@ import {
 } from 'src/auth/domain/exceptions';
 import { UserId } from 'src/shared/domain/types';
 import { OtpCode } from 'src/auth/domain/types';
+import { OtpPurpose } from 'src/auth/domain/enums';
 
 @Injectable()
 export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
@@ -37,6 +38,23 @@ export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
   ): Promise<Otp | null> {
     const record = await this.prismaService.otp.findFirst({
       where: { userId: userId, code: otpCode },
+    });
+    return record ? PrismaOtpMapper.toDomain(record) : null;
+  }
+
+  async findActiveOtpByUser(
+    userId: UserId,
+    purpose: OtpPurpose,
+  ): Promise<Otp | null> {
+    const record = await this.prismaService.otp.findFirst({
+      where: {
+        userId,
+        purpose: PrismaOtpMapper.convertDomainPurposeToPrisma(purpose),
+        expiresAt: { gt: new Date() },
+        usedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
     });
     return record ? PrismaOtpMapper.toDomain(record) : null;
   }

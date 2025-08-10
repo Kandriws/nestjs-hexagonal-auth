@@ -5,10 +5,18 @@ import {
   VerifyUserRegistrationDto,
 } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
-import { RegisterUserMapper, VerifyUserRegistrationMapper } from '../mappers';
+import {
+  RegisterUserMapper,
+  ResendRegistrationOtpMapper,
+  VerifyUserRegistrationMapper,
+} from '../mappers';
 import { BaseResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
-import { VerifyUserRegistrationPort } from 'src/auth/domain/ports/inbound';
+import {
+  ResendRegistrationOtpPort,
+  VerifyUserRegistrationPort,
+} from 'src/auth/domain/ports/inbound';
+import { ResendRegistrationOtpDto } from '../dtos/resend-registration-otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +25,8 @@ export class AuthController {
     private readonly registerUserPort: RegisterUserPort,
     @Inject(VerifyUserRegistrationPort)
     private readonly verifyUserRegistrationPort: VerifyUserRegistrationPort,
+    @Inject(ResendRegistrationOtpPort)
+    private readonly resendRegistrationOtpPort: ResendRegistrationOtpPort,
   ) {}
 
   @Post('register')
@@ -40,6 +50,18 @@ export class AuthController {
     await this.verifyUserRegistrationPort.execute(command);
     return ResponseFactory.ok<MessageResponseDto>({
       message: 'User registration verified successfully',
+    });
+  }
+
+  @Post('resend-registration-otp')
+  @HttpCode(HttpStatus.OK)
+  async resendRegistrationOtp(
+    @Body() dto: ResendRegistrationOtpDto,
+  ): Promise<BaseResponse<MessageResponseDto>> {
+    const command = ResendRegistrationOtpMapper.toCommand(dto);
+    await this.resendRegistrationOtpPort.execute(command.email);
+    return ResponseFactory.ok<MessageResponseDto>({
+      message: 'OTP resent successfully',
     });
   }
 }

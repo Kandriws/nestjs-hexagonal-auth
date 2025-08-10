@@ -1,29 +1,33 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Otp } from 'src/auth/domain/entities';
-import { User } from 'src/auth/domain/entities/user.entity';
 import { OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
-import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
 import {
-  RegisterUserCommand,
-  RegisterUserPort,
-} from 'src/auth/domain/ports/inbound';
+  UserAlreadyVerifiedException,
+  UserNotFoundException,
+} from 'src/auth/domain/exceptions';
+import { ResendRegistrationOtpPort } from 'src/auth/domain/ports/inbound';
 import {
   OtpNotificationContext,
   OtpNotificationPort,
 } from 'src/auth/domain/ports/outbound/notification';
-import { OtpRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/otp.repository.port';
-import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
-import { OtpPolicyPort } from 'src/auth/domain/ports/outbound/policy/otp-policy.port';
+import {
+  OtpRepositoryPort,
+  UserRepositoryPort,
+} from 'src/auth/domain/ports/outbound/persistence';
+import {
+  OtpPolicyPort,
+  OtpRateLimitPort,
+} from 'src/auth/domain/ports/outbound/policy';
 import {
   HasherPort,
   OtpGeneratorPort,
+  UUIDPort,
 } from 'src/auth/domain/ports/outbound/security';
-import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
 import { OtpCodeVo } from 'src/auth/domain/value-objects/otp-code.vo';
-import { UserId } from 'src/shared/domain/types';
-import { MailerEmailVo } from 'src/shared/domain/value-objects';
+import { EmailVo, MailerEmailVo } from 'src/shared/domain/value-objects';
 
-export class RegisterUserUseCase implements RegisterUserPort {
+@Injectable()
+export class ResendRegistrationOtpUseCase implements ResendRegistrationOtpPort {
   constructor(
     @Inject(UserRepositoryPort)
     private readonly userRepository: UserRepositoryPort,
@@ -39,33 +43,48 @@ export class RegisterUserUseCase implements RegisterUserPort {
     private readonly otpPolicy: OtpPolicyPort,
     @Inject(OtpNotificationPort)
     private readonly otpNotification: OtpNotificationPort,
+    @Inject(OtpRateLimitPort)
+    private readonly otpRateLimit: OtpRateLimitPort,
   ) {}
 
-  async execute(command: RegisterUserCommand): Promise<void> {
-    const email = command.email.getValue();
-    const existingUser = await this.userRepository.findByEmail(email);
+  async execute(email: EmailVo): Promise<void> {
+    const emailValue = email.getValue();
 
-    if (existingUser) {
-      throw new UserAlreadyExistsException();
+    const user = await this.userRepository.findByEmail(emailValue);
+    if (!user) {
+      throw new UserNotFoundException(
+        `User with email ${emailValue} not found`,
+      );
     }
 
-    const user = User.create({
-      id: this.uuid.generate() as UserId,
-      email: email,
-      password: await this.hasher.hash(command.password.getValue()),
-      firstName: command.firstName.getValue(),
-      lastName: command.lastName.getValue(),
-    });
+    if (user.isVerified()) throw new UserAlreadyVerifiedException();
+
+    const otp = await this.otpRepository.findActiveOtpByUser(
+      user.id,
+      OtpPurpose.EMAIL_VERIFICATION,
+    );
+
+    if (otp) {
+      await this.otpRepository.save(otp.markAsRevoked());
+    }
+
+    await this.otpRateLimit.hit(
+      user.id,
+      OtpPurpose.EMAIL_VERIFICATION,
+      OtpChannel.EMAIL,
+    );
+
     const channel: OtpChannel = OtpChannel.EMAIL;
     const purpose: OtpPurpose = OtpPurpose.EMAIL_VERIFICATION;
 
-    const otpCode = await this.otpGenerator.generate();
+    const rawOtpCode = await this.otpGenerator.generate();
+    const otpCode = OtpCodeVo.of(rawOtpCode);
     const ttl = this.otpPolicy.ttlMinutes(channel);
 
     const otpEntity = Otp.create({
       id: this.uuid.generate(),
       userId: user.id,
-      code: OtpCodeVo.of(otpCode),
+      code: otpCode,
       expiresAt: new Date(Date.now() + ttl * 60_000),
       channel,
       purpose,
@@ -73,15 +92,14 @@ export class RegisterUserUseCase implements RegisterUserPort {
 
     const context: OtpNotificationContext = {
       purpose,
-      code: OtpCodeVo.of(otpCode),
+      code: otpCode,
       ttl,
     };
 
-    await this.userRepository.save(user);
     await this.otpRepository.save(otpEntity);
     await this.otpNotification.send(
       channel,
-      [MailerEmailVo.of(email)],
+      [MailerEmailVo.of(emailValue)],
       context,
     );
   }

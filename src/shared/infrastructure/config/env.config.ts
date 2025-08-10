@@ -58,11 +58,17 @@ interface EnvConfig {
   security: {
     saltRounds: number;
     otp: {
-      email: {
-        ttl: number;
+      channel: {
+        email: {
+          ttl: number;
+        };
+        sms: {
+          ttl: number;
+        };
       };
-      sms: {
-        ttl: number;
+      rateLimit: {
+        maxAttempts: number;
+        windowMinutes: number;
       };
     };
   };
@@ -112,6 +118,15 @@ const envVarsSchema = joi
       .number()
       .default(5)
       .description('OTP TTL for SMS in minutes'),
+
+    OTP_RATE_LIMIT_MAX_ATTEMPTS: joi
+      .number()
+      .default(3)
+      .description('Maximum OTP attempts before rate limiting'),
+    OTP_RATE_LIMIT_WINDOW_MINUTES: joi
+      .number()
+      .default(15)
+      .description('Time window for OTP rate limiting in minutes'),
 
     // Database - Postgresql
     DATABASE_URL: joi.string().description('Full PostgreSQL connection URL'),
@@ -171,11 +186,17 @@ export const envs: EnvConfig = {
   security: {
     saltRounds: value.SALT_ROUNDS,
     otp: {
-      email: {
-        ttl: value.OTP_TTL_EMAIL,
+      channel: {
+        email: {
+          ttl: value.OTP_TTL_EMAIL,
+        },
+        sms: {
+          ttl: value.OTP_TTL_SMS,
+        },
       },
-      sms: {
-        ttl: value.OTP_TTL_SMS,
+      rateLimit: {
+        maxAttempts: value.OTP_RATE_LIMIT_MAX_ATTEMPTS,
+        windowMinutes: value.OTP_RATE_LIMIT_WINDOW_MINUTES,
       },
     },
   },

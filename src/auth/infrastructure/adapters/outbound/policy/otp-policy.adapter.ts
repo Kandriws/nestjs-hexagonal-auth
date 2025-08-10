@@ -13,9 +13,9 @@ export class OtpPolicyAdapter implements OtpPolicyPort {
   ) {}
 
   ttlMinutes(channel: OtpChannel): number {
-    const key = channel.toLowerCase() as keyof typeof this.config.otp;
+    const key = channel.toLowerCase() as keyof typeof this.config.otp.channel;
 
-    const ttl = this.config.otp[key]?.ttl;
+    const ttl = this.config.otp.channel[key]?.ttl;
 
     if (!ttl) {
       throw new UnknownOtpChannelException(
