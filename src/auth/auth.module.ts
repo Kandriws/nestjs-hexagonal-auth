@@ -9,6 +9,7 @@ import {
 import {
   HasherPort,
   OtpGeneratorPort,
+  TokenProviderPort,
   UUIDPort,
 } from './domain/ports/outbound/security';
 import {
@@ -18,6 +19,7 @@ import {
 import {
   BcryptHasherAdapter,
   CryptoUUIDAdapter,
+  JwtProviderAdapter,
   OtpGeneratorAdapter,
 } from './infrastructure/adapters/outbound/security';
 import securityConfig from 'src/shared/infrastructure/config/security.config';
@@ -43,10 +45,16 @@ import {
   ResendRegistrationOtpUseCase,
   VerifyUserRegistrationUseCase,
 } from './application/use-cases';
+import jwtConfig from './infrastructure/config/jwt.config';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtTokenConfigMapper } from './infrastructure/utils/jwt-token-config.util';
+import { TokenType } from './domain/enums';
+import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
 
 @Module({
   controllers: [AuthController],
   providers: [
+    JwtTokenConfigMapper,
     {
       provide: RegisterUserPort,
       useClass: RegisterUserUseCase,
@@ -76,6 +84,10 @@ import {
       useClass: BcryptHasherAdapter,
     },
     {
+      provide: TokenProviderPort,
+      useClass: JwtProviderAdapter,
+    },
+    {
       provide: OtpGeneratorPort,
       useClass: OtpGeneratorAdapter,
     },
@@ -95,7 +107,13 @@ import {
   imports: [
     PrismaModule,
     SharedModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule.forFeature(jwtConfig)],
+      useFactory: (cfg) => jwtModuleFactory(TokenType.ACCESS, cfg),
+      inject: [jwtConfig.KEY],
+    }),
     ConfigModule.forFeature(securityConfig),
+    ConfigModule.forFeature(jwtConfig),
   ],
 })
 export class AuthModule {}
