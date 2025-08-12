@@ -1,11 +1,31 @@
-import { BaseResponse } from './base-response.dto';
+import { ApiResponse } from './api-response.dto';
 
+interface Payload<T> {
+  data?: T;
+  message: string;
+}
 export class ResponseFactory {
-  static ok<T>(data: T): BaseResponse<T> {
-    return { success: true, data };
+  static ok<T>(payload: Payload<T>): ApiResponse<T> {
+    const { data, message } = payload;
+    return {
+      success: true,
+      data,
+      message,
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  static created<T>(data: T): BaseResponse<T> {
-    return { success: true, data };
+  static created<T>(payload: Payload<T>): ApiResponse<T> {
+    const { data, message } = payload;
+    return {
+      success: true,
+      data,
+      message,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  static error(message: string): ApiResponse<null> {
+    return { success: false, message, timestamp: new Date().toISOString() };
   }
 }

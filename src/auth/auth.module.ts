@@ -4,11 +4,13 @@ import { AuthController } from './presentation/http/controllers/auth.controller'
 import { PrismaModule } from 'src/shared/infrastructure/prisma/prisma.module';
 import {
   OtpRepositoryPort,
+  TokenRepositoryPort,
   UserRepositoryPort,
 } from './domain/ports/outbound/persistence';
 import {
   HasherPort,
   OtpGeneratorPort,
+  OtpSenderPort,
   TokenProviderPort,
   UUIDPort,
 } from './domain/ports/outbound/security';
@@ -21,6 +23,7 @@ import {
   CryptoUUIDAdapter,
   JwtProviderAdapter,
   OtpGeneratorAdapter,
+  OtpSenderAdapter,
 } from './infrastructure/adapters/outbound/security';
 import securityConfig from 'src/shared/infrastructure/config/security.config';
 import {
@@ -31,6 +34,7 @@ import { SharedModule } from 'src/shared/shared.module';
 import { OtpNotificationPort } from './domain/ports/outbound/notification';
 import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
 import {
+  LoginUserPort,
   RegisterUserPort,
   ResendRegistrationOtpPort,
   VerifyUserRegistrationPort,
@@ -50,6 +54,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtTokenConfigMapper } from './infrastructure/utils/jwt-token-config.util';
 import { TokenType } from './domain/enums';
 import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
+import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
+import { PrismaTokenRepositoryAdapter } from './infrastructure/adapters/outbound/persistence/prisma-token.repository.adapter';
 
 @Module({
   controllers: [AuthController],
@@ -58,6 +64,10 @@ import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
     {
       provide: RegisterUserPort,
       useClass: RegisterUserUseCase,
+    },
+    {
+      provide: LoginUserPort,
+      useClass: LoginUserUseCase,
     },
     {
       provide: VerifyUserRegistrationPort,
@@ -74,6 +84,10 @@ import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
     {
       provide: OtpRepositoryPort,
       useClass: PrismaOtpRepositoryAdapter,
+    },
+    {
+      provide: TokenRepositoryPort,
+      useClass: PrismaTokenRepositoryAdapter,
     },
     {
       provide: UUIDPort,
@@ -102,6 +116,10 @@ import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
     {
       provide: OtpNotificationPort,
       useClass: OtpNotificationSenderAdapter,
+    },
+    {
+      provide: OtpSenderPort,
+      useClass: OtpSenderAdapter,
     },
   ],
   imports: [

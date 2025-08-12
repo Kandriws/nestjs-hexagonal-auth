@@ -9,8 +9,8 @@ import {
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
 import { JwtTokenConfigMapper } from 'src/auth/infrastructure/utils/jwt-token-config.util';
 import { UserId } from 'src/shared/domain/types';
+import { secondsToMilliseconds } from 'src/shared/domain/utils/time.util';
 import { EmailVo } from 'src/shared/domain/value-objects';
-import { addDuration } from 'src/shared/infrastructure/utils/time.util';
 
 @Injectable()
 export class JwtProviderAdapter implements TokenProviderPort {
@@ -26,31 +26,48 @@ export class JwtProviderAdapter implements TokenProviderPort {
     extra?: TokenExtraData,
   ): Promise<string> {
     const jwtConfig = this.jwtConfigMapper.of(type);
-    const expiresIn = addDuration(new Date(), jwtConfig.expiresIn);
-    const payload: TokenPayloadVo = TokenPayloadVo.of({
+    const payload = {
       userId,
-      email,
-      expiresAt: expiresIn,
-      issuedAt: new Date(),
+      email: email.getValue(),
       jti: extra?.jti !== undefined ? String(extra.jti) : undefined,
-    });
-
+    };
+    console.log('Generating JWT with payload:', payload);
     return this.jwtService.signAsync(payload, jwtConfig);
   }
 
-  async validate(token: string, type: TokenType): Promise<TokenPayloadVo> {
+  async validate(
+    token: string,
+    type: TokenType,
+  ): Promise<Readonly<TokenPayloadVo>> {
     const jwtConfig = this.jwtConfigMapper.of(type);
     try {
       const payload = await this.jwtService.verifyAsync(token, jwtConfig);
       return TokenPayloadVo.of({
         userId: payload.userId,
         email: EmailVo.of(payload.email),
-        expiresAt: new Date(payload.expiresAt),
-        issuedAt: new Date(payload.issuedAt),
+        expiresAt: new Date(secondsToMilliseconds(payload.exp)),
+        issuedAt: new Date(secondsToMilliseconds(payload.iat)),
         jti: payload.jti,
       });
     } catch {
       throw new InvalidTokenPayloadException(`Invalid token for type: ${type}`);
+    }
+  }
+
+  async decode(token: string): Promise<Readonly<TokenPayloadVo>> {
+    try {
+      const payload = this.jwtService.decode(token);
+      console.log('Decoded JWT payload:', payload);
+      return TokenPayloadVo.of({
+        userId: payload.userId,
+        email: EmailVo.of(payload.email),
+        expiresAt: new Date(secondsToMilliseconds(payload.exp)),
+        issuedAt: new Date(secondsToMilliseconds(payload.iat)),
+        jti: payload.jti ? String(payload.jti) : undefined,
+      });
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      throw new InvalidTokenPayloadException('Invalid token format');
     }
   }
 }

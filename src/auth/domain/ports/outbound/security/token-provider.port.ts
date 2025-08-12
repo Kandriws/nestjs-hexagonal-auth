@@ -16,5 +16,7 @@ export interface TokenProviderPort {
     extra?: TokenExtraData,
   ): Promise<string>;
 
-  validate(token: string, type: TokenType): Promise<TokenPayloadVo>;
+  validate(token: string, type: TokenType): Promise<Readonly<TokenPayloadVo>>;
+
+  decode(token: string): Promise<Readonly<TokenPayloadVo>>;
 }

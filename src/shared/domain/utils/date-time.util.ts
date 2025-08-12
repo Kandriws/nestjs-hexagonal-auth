@@ -1,8 +1,10 @@
+import { minutesToMilliseconds } from './time.util';
+
 /**
  * Converts a human-readable duration string ("15m", "2.5h", "7d")
  * into its equivalent in milliseconds.
  */
-export function durationToMs(text: string): number {
+export function convertDurationToMilliseconds(text: string): number {
   const [, numStr, unit] = text.match(/^(\d+(?:\.\d+)?)\s*([smhd])$/i) ?? [];
   if (!numStr || !unit) {
     throw new Error(`Invalid duration format: ${text}`);
@@ -26,9 +28,22 @@ export function durationToMs(text: string): number {
  * @returns A new Date object with the duration added.
  * @throws Error if the duration format is invalid.
  */
-export function addDuration(origin: Date | number, durationText: string): Date {
-  const offset = durationToMs(durationText);
+export function addDurationToDate(
+  origin: Date | number,
+  durationText: string,
+): Date {
+  const offset = convertDurationToMilliseconds(durationText);
   return new Date(
     (origin instanceof Date ? origin.getTime() : origin) + offset,
   );
+}
+
+/**
+ * Creates a new `Date` object representing the current time plus the specified number of minutes.
+ *
+ * @param minutes - The number of minutes to add to the current time.
+ * @returns A `Date` object with the added minutes.
+ */
+export function createDateWithAddedMinutes(minutes: number): Date {
+  return new Date(Date.now() + minutesToMilliseconds(minutes));
 }

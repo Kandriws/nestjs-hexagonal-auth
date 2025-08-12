@@ -1,8 +1,8 @@
 import { LockPolicy } from './interfaces/lock-policy.interface';
-import { LoginThreshold } from './interfaces/login-threshold.interface';
+import { Threshold } from './interfaces/threshold.interface';
 
 export class TableLockPolicy implements LockPolicy {
-  constructor(private readonly thresholds: readonly LoginThreshold[]) {}
+  constructor(private readonly thresholds: readonly Threshold[]) {}
 
   shouldLock(attempts: number): boolean {
     return this.thresholds.some((t) => attempts >= t.attempts);

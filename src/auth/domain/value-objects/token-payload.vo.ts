@@ -19,7 +19,22 @@ export class TokenPayloadVo {
     private readonly _jti?: string,
   ) {}
 
-  static of(createParams: CreateTokenPayloadVoParams): TokenPayloadVo {
+  /**
+   * Creates a new immutable instance of `TokenPayloadVo` from the provided parameters.
+   * Validates the input parameters before instantiation.
+   *
+   * @param createParams - The parameters required to create a `TokenPayloadVo` instance.
+   * @param createParams.userId - The user ID associated with the token.
+   * @param createParams.email - The email associated with the token.
+   * @param createParams.expiresAt - The expiration date of the token.
+   * @param createParams.issuedAt - The issuance date of the token.
+   * @param createParams.jti - An optional JWT ID (JTI) for the token.
+   * @returns A frozen (immutable) `TokenPayloadVo` object.
+   * @throws Will throw an error if validation of the parameters fails.
+   */
+  static of(
+    createParams: CreateTokenPayloadVoParams,
+  ): Readonly<TokenPayloadVo> {
     this.validate(
       createParams.userId,
       createParams.expiresAt,
@@ -27,12 +42,14 @@ export class TokenPayloadVo {
       createParams.jti,
     );
 
-    return new TokenPayloadVo(
-      createParams.userId,
-      createParams.email,
-      createParams.expiresAt,
-      createParams.issuedAt,
-      createParams.jti,
+    return Object.freeze(
+      new TokenPayloadVo(
+        createParams.userId,
+        createParams.email,
+        new Date(createParams.expiresAt),
+        new Date(createParams.issuedAt),
+        createParams.jti,
+      ),
     );
   }
 
@@ -80,6 +97,14 @@ export class TokenPayloadVo {
       this._issuedAt.getTime() === other._issuedAt.getTime() &&
       this._jti === other._jti
     );
+  }
+
+  toJSON(): Record<string, any> {
+    return {
+      userId: this._userId,
+      email: this._email.getValue(),
+      jti: this._jti,
+    };
   }
 
   isExpired(currentTime: Date = new Date()): boolean {
