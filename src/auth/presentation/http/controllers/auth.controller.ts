@@ -1,9 +1,5 @@
 import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
 import {
-  RequestMetadata,
-  RequestContext,
-} from 'src/shared/infrastructure/decorators/request-metadata.decorator';
-import {
   RegisterUserDto,
   MessageResponseDto,
   VerifyUserRegistrationDto,
@@ -25,6 +21,10 @@ import {
 } from 'src/auth/domain/ports/inbound';
 import { ResendRegistrationOtpDto } from '../dtos/resend-registration-otp.dto';
 import { LoginUserResponse } from 'src/auth/domain/ports/inbound/commands/login-user-result';
+import {
+  RequestContext,
+  RequestMetadata,
+} from 'src/shared/infrastructure/decorators/request-metadata.decorator';
 
 @Controller('auth')
 export class AuthController {
