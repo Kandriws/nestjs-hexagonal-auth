@@ -57,11 +57,8 @@ export class AuthController {
     @Body() dto: LoginUserDto,
     @RequestMetadata() requestContext: RequestContext,
   ): Promise<ApiResponse<LoginUserResponse>> {
-    const command = LoginUserMapper.toCommand(
-      dto,
-      requestContext.ipAddress,
-      requestContext.userAgent,
-    );
+    const command = LoginUserMapper.toCommand(dto, requestContext);
+
     const response = await this.loginUserPort.execute(command);
     return ResponseFactory.ok<LoginUserResponse>({
       data: response,
