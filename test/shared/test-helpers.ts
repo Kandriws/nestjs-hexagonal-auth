@@ -66,3 +66,19 @@ export const createMockRepository = <T extends object>(): jest.Mocked<T> => {
 
   return mock;
 };
+
+/**
+ * Create a typed jest mock for any interface T.
+ * Usage: const repo = createMock<MyRepoPort>();
+ */
+export const createMock = <T extends object>(): jest.Mocked<T> => {
+  const target: Record<PropertyKey, any> = {};
+  return new Proxy(target, {
+    get: (_t, prop: PropertyKey) => {
+      if (!(prop in target)) {
+        target[prop] = jest.fn();
+      }
+      return target[prop];
+    },
+  }) as unknown as jest.Mocked<T>;
+};
