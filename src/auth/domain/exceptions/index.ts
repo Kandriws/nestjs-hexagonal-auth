@@ -2,6 +2,7 @@ export * from './invalid-credentials.exception';
 export * from './invalid-otp-code.exception';
 export * from './invalid-otp-purpose.exception';
 export * from './invalid-token-payload.exception';
+export * from './login-rate-limit-exceeded.exception';
 export * from './otp-already-used.exception';
 export * from './otp-expired.exception';
 export * from './otp-not-found.exception';

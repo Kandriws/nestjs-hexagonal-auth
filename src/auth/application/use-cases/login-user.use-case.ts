@@ -19,6 +19,8 @@ import {
   InvalidCredentialsException,
   UserNotVerifiedException,
 } from 'src/auth/domain/exceptions';
+import { LoginRateLimitPort } from 'src/auth/domain/ports/outbound/policy';
+import { RateLimitInfo } from 'src/auth/domain/types';
 
 @Injectable()
 export class LoginUserUseCase implements LoginUserPort {
@@ -35,6 +37,8 @@ export class LoginUserUseCase implements LoginUserPort {
     private uuid: UUIDPort,
     @Inject(OtpSenderPort)
     private otpSender: OtpSenderPort,
+    @Inject(LoginRateLimitPort)
+    private loginRateLimit: LoginRateLimitPort,
   ) {}
 
   async execute(command: LoginUserCommand): Promise<LoginUserResponse> {
@@ -68,8 +72,16 @@ export class LoginUserUseCase implements LoginUserPort {
     );
 
     if (!isValid) {
-      throw new InvalidCredentialsException();
+      const rateLimitInfo: RateLimitInfo = await this.loginRateLimit.hit(
+        user.id,
+      );
+
+      throw new InvalidCredentialsException(
+        `Invalid credentials. Attempts: ${rateLimitInfo.attempts}, remaining: ${rateLimitInfo.remainingAttempts}`,
+      );
     }
+
+    await this.loginRateLimit.reset(user.id);
 
     const tokenId = this.uuid.generate();
 

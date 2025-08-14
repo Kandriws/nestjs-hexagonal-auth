@@ -56,6 +56,7 @@ interface EnvConfig {
     fromName: string;
   };
   security: {
+    rateLimitProfile: string;
     saltRounds: number;
     otp: {
       channel: {
@@ -123,6 +124,11 @@ const envVarsSchema = joi
     MAIL_FROM_NAME: joi.string().default('No Reply'),
 
     // Security
+    RATE_LIMIT_PROFILE: joi
+      .string()
+      .valid('standard', 'aggressive')
+      .default('standard')
+      .description('Rate limit profile to use'),
     SALT_ROUNDS: joi.number().default(10).description('Bcrypt salt rounds'),
     OTP_TTL_EMAIL: joi
       .number()
@@ -206,6 +212,7 @@ export const envs: EnvConfig = {
     fromName: value.MAIL_FROM_NAME,
   },
   security: {
+    rateLimitProfile: value.RATE_LIMIT_PROFILE,
     saltRounds: value.SALT_ROUNDS,
     otp: {
       channel: {

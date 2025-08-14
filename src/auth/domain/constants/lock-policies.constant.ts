@@ -1,4 +1,4 @@
-import { Threshold } from '../services/interfaces/threshold.interface';
+import { Threshold } from '../value-objects/threshold.vo';
 
 export const LOCK_POLICY_SYMBOL = Symbol('LOCK_POLICY_SYMBOL');
 export const LOCK_POLICIES: Record<string, readonly Threshold[]> = {

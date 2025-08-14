@@ -27,6 +27,7 @@ import {
 } from './infrastructure/adapters/outbound/security';
 import securityConfig from 'src/shared/infrastructure/config/security.config';
 import {
+  LoginRateLimitPort,
   OtpPolicyPort,
   OtpRateLimitPort,
 } from './domain/ports/outbound/policy';
@@ -42,6 +43,7 @@ import {
 
 import {
   OtpPolicyAdapter,
+  PrismaLoginRateLimitAdapter,
   PrismaOtpRateLimitAdapter,
 } from './infrastructure/adapters/outbound/policy';
 import {
@@ -112,6 +114,10 @@ import { PrismaTokenRepositoryAdapter } from './infrastructure/adapters/outbound
     {
       provide: OtpRateLimitPort,
       useClass: PrismaOtpRateLimitAdapter,
+    },
+    {
+      provide: LoginRateLimitPort,
+      useClass: PrismaLoginRateLimitAdapter,
     },
     {
       provide: OtpNotificationPort,

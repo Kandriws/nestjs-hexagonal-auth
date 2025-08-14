@@ -15,17 +15,18 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  email        String         @unique
-  password     String
-  firstName    String
-  lastName     String
-  verifiedAt   DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  Otp          Otp[]
-  OtpRateLimit OtpRateLimit[]
-  UserSession  Token[]
+  id             String           @id @default(uuid())
+  email          String           @unique
+  password       String
+  firstName      String
+  lastName       String
+  verifiedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Otp            Otp[]
+  OtpRateLimit   OtpRateLimit[]
+  UserSession    Token[]
+  LoginRateLimit LoginRateLimit[]
 }
 
 enum OtpChannel {
@@ -62,21 +63,6 @@ model Otp {
   @@index([expiresAt])
 }
 
-model OtpRateLimit {
-  id          String     @id @default(uuid())
-  userId      String
-  channel     OtpChannel
-  purpose     OtpPurpose
-  attempts    Int        @default(0)
-  windowStart DateTime
-  windowEnd   DateTime
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  user        User       @relation(fields: [userId], references: [id])
-
-  @@unique([userId, channel, purpose])
-}
-
 model Token {
   id        String    @id @default(uuid())
   userId    String
@@ -90,4 +76,32 @@ model Token {
 
   @@index([userId, type])
   @@index([expiresAt])
+}
+
+model LoginRateLimit {
+  userId      String   @id
+  attempts    Int      @default(0)
+  windowStart DateTime
+  windowEnd   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@index([windowStart])
+}
+
+model OtpRateLimit {
+  id          String     @id @default(uuid())
+  userId      String
+  channel     OtpChannel
+  purpose     OtpPurpose
+  attempts    Int        @default(0)
+  windowStart DateTime
+  windowEnd   DateTime
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+
+  @@unique([userId, channel, purpose])
 }
