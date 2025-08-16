@@ -1,6 +1,4 @@
-import { minutesToMilliseconds } from 'src/shared/domain/utils/time.util';
 import { TwoFactorMethod } from '../enums';
-import { LockPolicy } from '../services/interfaces/lock-policy.interface';
 
 export class UserSecurityVo {
   private constructor(
@@ -24,33 +22,6 @@ export class UserSecurityVo {
       undefined,
       TwoFactorMethod.EMAIL_OTP,
       undefined,
-    );
-  }
-
-  incrementFailedLoginAttempt(policy: LockPolicy): UserSecurityVo {
-    const newAttempts = this.failedLoginAttempts + 1;
-
-    const shouldLock = policy.shouldLock(newAttempts);
-
-    const lockMinutes = shouldLock
-      ? policy.lockDurationMinutes(newAttempts)
-      : 0;
-
-    const lockDurationMs = minutesToMilliseconds(lockMinutes);
-
-    const newLockedUntil = shouldLock
-      ? new Date(Date.now() + lockDurationMs)
-      : undefined;
-
-    return new UserSecurityVo(
-      newAttempts,
-      shouldLock,
-      this.twoFactorEnabled,
-      this.recoveryCodes,
-      new Date(),
-      newLockedUntil,
-      this.twoFactorMethod,
-      this.twoFactorSecret,
     );
   }
 }

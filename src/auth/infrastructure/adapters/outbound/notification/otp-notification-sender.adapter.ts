@@ -16,7 +16,7 @@ export class OtpNotificationSenderAdapter implements OtpNotificationPort {
 
   async send(
     channel: OtpChannel,
-    to: MailerEmailVo[],
+    to: string[],
     ctx: OtpNotificationContext,
   ): Promise<void> {
     switch (channel) {
@@ -24,8 +24,9 @@ export class OtpNotificationSenderAdapter implements OtpNotificationPort {
         // TODO: Implement template rendering logic
         const subject = 'Your OTP Code';
         const body = this.generateOtpTemplate(ctx.code.getValue(), ctx.ttl);
+        const emails = to.map((email) => MailerEmailVo.of(email));
         return this.mailer.send({
-          to,
+          to: emails,
           subject,
           body,
         });

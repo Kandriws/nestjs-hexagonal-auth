@@ -3,20 +3,28 @@ import {
   RegisterUserDto,
   MessageResponseDto,
   VerifyUserRegistrationDto,
+  LoginUserDto,
 } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import {
+  LoginUserMapper,
   RegisterUserMapper,
   ResendRegistrationOtpMapper,
   VerifyUserRegistrationMapper,
 } from '../mappers';
-import { BaseResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
+import { ApiResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
+  LoginUserPort,
   ResendRegistrationOtpPort,
   VerifyUserRegistrationPort,
 } from 'src/auth/domain/ports/inbound';
 import { ResendRegistrationOtpDto } from '../dtos/resend-registration-otp.dto';
+import { LoginUserResponse } from 'src/auth/domain/ports/inbound/commands/login-user-result';
+import {
+  RequestContext,
+  RequestMetadata,
+} from 'src/shared/infrastructure/decorators/request-metadata.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -27,13 +35,15 @@ export class AuthController {
     private readonly verifyUserRegistrationPort: VerifyUserRegistrationPort,
     @Inject(ResendRegistrationOtpPort)
     private readonly resendRegistrationOtpPort: ResendRegistrationOtpPort,
+    @Inject(LoginUserPort)
+    private readonly loginUserPort: LoginUserPort,
   ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() dto: RegisterUserDto,
-  ): Promise<BaseResponse<MessageResponseDto>> {
+  ): Promise<ApiResponse<MessageResponseDto>> {
     const command = RegisterUserMapper.toCommand(dto);
     await this.registerUserPort.execute(command);
     return ResponseFactory.created<MessageResponseDto>({
@@ -41,11 +51,26 @@ export class AuthController {
     });
   }
 
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() dto: LoginUserDto,
+    @RequestMetadata() requestContext: RequestContext,
+  ): Promise<ApiResponse<LoginUserResponse>> {
+    const command = LoginUserMapper.toCommand(dto, requestContext);
+
+    const response = await this.loginUserPort.execute(command);
+    return ResponseFactory.ok<LoginUserResponse>({
+      data: response,
+      message: 'User logged in successfully',
+    });
+  }
+
   @Post('verify-registration')
   @HttpCode(HttpStatus.OK)
   async verifyRegistration(
     @Body() dto: VerifyUserRegistrationDto,
-  ): Promise<BaseResponse<MessageResponseDto>> {
+  ): Promise<ApiResponse<MessageResponseDto>> {
     const command = VerifyUserRegistrationMapper.toCommand(dto);
     await this.verifyUserRegistrationPort.execute(command);
     return ResponseFactory.ok<MessageResponseDto>({
@@ -57,11 +82,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resendRegistrationOtp(
     @Body() dto: ResendRegistrationOtpDto,
-  ): Promise<BaseResponse<MessageResponseDto>> {
+  ): Promise<ApiResponse<MessageResponseDto>> {
     const command = ResendRegistrationOtpMapper.toCommand(dto);
     await this.resendRegistrationOtpPort.execute(command.email);
     return ResponseFactory.ok<MessageResponseDto>({
-      message: 'OTP resent successfully',
+      message: 'Registration OTP resent successfully',
     });
   }
 }

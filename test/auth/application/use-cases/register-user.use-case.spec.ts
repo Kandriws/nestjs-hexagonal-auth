@@ -1,15 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RegisterUserUseCase } from '../../../../src/auth/application/use-cases/register-user.use-case';
-import { UserRepositoryPort } from '../../../../src/auth/domain/ports/outbound/persistence/user.repository.port';
-import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
-import { HasherPort } from 'src/auth/domain/ports/outbound/security/hasher.port';
-import { OtpGeneratorPort } from 'src/auth/domain/ports/outbound/security/otp-generator.port';
-import { OtpRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/otp.repository.port';
-import { OtpPolicyPort } from 'src/auth/domain/ports/outbound/policy/otp-policy.port';
-import { OtpNotificationPort } from 'src/auth/domain/ports/outbound/notification/otp-notification.port';
-import { UserId } from 'src/shared/domain/types';
-import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register-user.command';
+import { RegisterUserUseCase } from 'src/auth/application/use-cases';
 import { User } from 'src/auth/domain/entities';
+import { RegisterUserCommand } from 'src/auth/domain/ports/inbound';
+import { OtpNotificationPort } from 'src/auth/domain/ports/outbound/notification';
+import {
+  OtpRepositoryPort,
+  UserRepositoryPort,
+} from 'src/auth/domain/ports/outbound/persistence';
+import { OtpPolicyPort } from 'src/auth/domain/ports/outbound/policy';
+import {
+  HasherPort,
+  OtpGeneratorPort,
+  OtpSenderPort,
+  UUIDPort,
+} from 'src/auth/domain/ports/outbound/security';
+import { UserId } from 'src/shared/domain/types';
 import { EmailVo, NameVo, PasswordVo } from 'src/shared/domain/value-objects';
 
 describe('RegisterUserUseCase', () => {
@@ -71,6 +76,12 @@ describe('RegisterUserUseCase', () => {
           provide: OtpNotificationPort,
           useValue: {
             send: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: OtpSenderPort,
+          useValue: {
+            sendOtp: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],

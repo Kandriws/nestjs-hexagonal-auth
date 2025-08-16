@@ -15,16 +15,18 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  email        String         @unique
-  password     String
-  firstName    String
-  lastName     String
-  verifiedAt   DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  Otp          Otp[]
-  OtpRateLimit OtpRateLimit[]
+  id             String           @id @default(uuid())
+  email          String           @unique
+  password       String
+  firstName      String
+  lastName       String
+  verifiedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Otp            Otp[]
+  OtpRateLimit   OtpRateLimit[]
+  UserSession    Token[]
+  LoginRateLimit LoginRateLimit[]
 }
 
 enum OtpChannel {
@@ -36,6 +38,12 @@ enum OtpPurpose {
   EMAIL_VERIFICATION
   PASSWORD_RESET
   TWO_FACTOR_AUTHENTICATION
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  RESET_PASSWORD
 }
 
 model Otp {
@@ -53,6 +61,34 @@ model Otp {
 
   @@unique([userId, code, purpose])
   @@index([expiresAt])
+}
+
+model Token {
+  id        String    @id @default(uuid())
+  userId    String
+  type      TokenType
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, type])
+  @@index([expiresAt])
+}
+
+model LoginRateLimit {
+  userId      String   @id
+  attempts    Int      @default(0)
+  windowStart DateTime
+  windowEnd   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@index([windowStart])
 }
 
 model OtpRateLimit {

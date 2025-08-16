@@ -56,6 +56,7 @@ interface EnvConfig {
     fromName: string;
   };
   security: {
+    rateLimitProfile: string;
     saltRounds: number;
     otp: {
       channel: {
@@ -69,6 +70,20 @@ interface EnvConfig {
       rateLimit: {
         maxAttempts: number;
         windowMinutes: number;
+      };
+    };
+    jwt: {
+      access: {
+        secret: string;
+        expiresIn: string;
+      };
+      refresh: {
+        secret: string;
+        expiresIn: string;
+      };
+      reset: {
+        secret: string;
+        expiresIn: string;
       };
     };
   };
@@ -109,6 +124,11 @@ const envVarsSchema = joi
     MAIL_FROM_NAME: joi.string().default('No Reply'),
 
     // Security
+    RATE_LIMIT_PROFILE: joi
+      .string()
+      .valid('standard', 'aggressive')
+      .default('standard')
+      .description('Rate limit profile to use'),
     SALT_ROUNDS: joi.number().default(10).description('Bcrypt salt rounds'),
     OTP_TTL_EMAIL: joi
       .number()
@@ -127,6 +147,14 @@ const envVarsSchema = joi
       .number()
       .default(15)
       .description('Time window for OTP rate limiting in minutes'),
+
+    // JWT
+    JWT_ACCESS_SECRET: joi.string().required(),
+    JWT_ACCESS_EXPIRATION: joi.string().default('15m'),
+    JWT_REFRESH_SECRET: joi.string().required(),
+    JWT_REFRESH_EXPIRATION: joi.string().default('30d'),
+    JWT_RESET_SECRET: joi.string().required(),
+    JWT_RESET_EXPIRATION: joi.string().default('1h'),
 
     // Database - Postgresql
     DATABASE_URL: joi.string().description('Full PostgreSQL connection URL'),
@@ -184,6 +212,7 @@ export const envs: EnvConfig = {
     fromName: value.MAIL_FROM_NAME,
   },
   security: {
+    rateLimitProfile: value.RATE_LIMIT_PROFILE,
     saltRounds: value.SALT_ROUNDS,
     otp: {
       channel: {
@@ -197,6 +226,20 @@ export const envs: EnvConfig = {
       rateLimit: {
         maxAttempts: value.OTP_RATE_LIMIT_MAX_ATTEMPTS,
         windowMinutes: value.OTP_RATE_LIMIT_WINDOW_MINUTES,
+      },
+    },
+    jwt: {
+      access: {
+        secret: value.JWT_ACCESS_SECRET,
+        expiresIn: value.JWT_ACCESS_EXPIRATION,
+      },
+      refresh: {
+        secret: value.JWT_REFRESH_SECRET,
+        expiresIn: value.JWT_REFRESH_EXPIRATION,
+      },
+      reset: {
+        secret: value.JWT_RESET_SECRET,
+        expiresIn: value.JWT_RESET_EXPIRATION,
       },
     },
   },
