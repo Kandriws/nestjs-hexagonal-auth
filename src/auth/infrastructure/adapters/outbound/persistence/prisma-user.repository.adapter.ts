@@ -2,9 +2,10 @@ import { User } from 'src/auth/domain/entities/user.entity';
 import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
 import { PrismaService } from 'src/shared/infrastructure/prisma/prisma.service';
 import { PrismaUserMapper } from './mappers/prisma-user.mapper';
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Email, UserId } from 'src/shared/domain/types';
 
+@Injectable()
 export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
   constructor(
     @Inject(PrismaService)

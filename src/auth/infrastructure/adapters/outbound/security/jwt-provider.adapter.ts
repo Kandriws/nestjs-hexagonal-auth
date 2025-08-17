@@ -55,7 +55,10 @@ export class JwtProviderAdapter implements TokenProviderPort {
 
   async decode(token: string): Promise<Readonly<TokenPayloadVo>> {
     try {
-      const payload = this.jwtService.decode(token);
+      const payload: any = this.jwtService.decode(token);
+      if (!payload) {
+        throw new InvalidTokenPayloadException('Invalid token format');
+      }
       return TokenPayloadVo.of({
         userId: payload.userId,
         email: EmailVo.of(payload.email),

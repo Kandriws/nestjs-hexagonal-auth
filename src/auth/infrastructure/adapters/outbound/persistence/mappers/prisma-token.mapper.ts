@@ -1,6 +1,8 @@
-import { Token as PrismaToken } from 'generated/prisma';
+import {
+  Token as PrismaToken,
+  TokenType as PrismaTokenType,
+} from 'generated/prisma';
 import { Token } from 'src/auth/domain/entities';
-import { TokenType as PrismaTokenType } from 'src/auth/domain/enums';
 import { TokenType } from 'src/auth/domain/enums';
 import { UserId } from 'src/shared/domain/types';
 
