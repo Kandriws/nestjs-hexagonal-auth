@@ -4,3 +4,4 @@ export * from './login-user.port';
 export * from './register-user.port';
 export * from './resend-registration-otp.port';
 export * from './verify-user-registration.port';
+export * from './refresh-token.port';

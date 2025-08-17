@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Token } from 'src/auth/domain/entities';
 import { OtpChannel, OtpPurpose, TokenType } from 'src/auth/domain/enums';
 import { AccessToken, RefreshToken } from 'src/shared/domain/types';
-import { LoginUserResponse } from 'src/auth/domain/ports/inbound/commands/login-user-result';
+import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-tokens-response';
 import { LoginUserCommand } from 'src/auth/domain/ports/inbound/commands/login-user.command';
 import { LoginUserPort } from 'src/auth/domain/ports/inbound/login-user.port';
 import {
@@ -41,7 +41,7 @@ export class LoginUserUseCase implements LoginUserPort {
     private loginRateLimit: LoginRateLimitPort,
   ) {}
 
-  async execute(command: LoginUserCommand): Promise<LoginUserResponse> {
+  async execute(command: LoginUserCommand): Promise<AuthTokensResponse> {
     const user = await this.userRepository.findByEmail(
       command.email.getValue(),
     );
@@ -116,6 +116,6 @@ export class LoginUserUseCase implements LoginUserPort {
     return {
       accessToken: accessToken as AccessToken,
       refreshToken: refreshToken as RefreshToken,
-    } as LoginUserResponse;
+    } as AuthTokensResponse;
   }
 }

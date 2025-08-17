@@ -36,6 +36,7 @@ import { OtpNotificationPort } from './domain/ports/outbound/notification';
 import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
 import {
   LoginUserPort,
+  RefreshTokenPort,
   RegisterUserPort,
   ResendRegistrationOtpPort,
   VerifyUserRegistrationPort,
@@ -58,6 +59,7 @@ import { TokenType } from './domain/enums';
 import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { PrismaTokenRepositoryAdapter } from './infrastructure/adapters/outbound/persistence/prisma-token.repository.adapter';
+import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
 
 @Module({
   controllers: [AuthController],
@@ -78,6 +80,10 @@ import { PrismaTokenRepositoryAdapter } from './infrastructure/adapters/outbound
     {
       provide: ResendRegistrationOtpPort,
       useClass: ResendRegistrationOtpUseCase,
+    },
+    {
+      provide: RefreshTokenPort,
+      useClass: RefreshTokenUseCase,
     },
     {
       provide: UserRepositoryPort,

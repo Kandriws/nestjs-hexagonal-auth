@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from 'src/auth/domain/entities/user.entity';
 import { OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
 import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
@@ -14,6 +14,7 @@ import {
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
 import { UserId } from 'src/shared/domain/types';
 
+@Injectable()
 export class RegisterUserUseCase implements RegisterUserPort {
   constructor(
     @Inject(UserRepositoryPort)

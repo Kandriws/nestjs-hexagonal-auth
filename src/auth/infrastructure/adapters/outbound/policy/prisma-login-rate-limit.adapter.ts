@@ -52,7 +52,6 @@ export class PrismaLoginRateLimitAdapter implements LoginRateLimitPort {
     currentWindow.registerAttemptAndBlockIfLimitReached();
 
     if (record.attempts !== currentWindow.attempts) {
-      console.log('Updating attempts in database');
       await this.prisma.loginRateLimit.update({
         where: { userId },
         data: {

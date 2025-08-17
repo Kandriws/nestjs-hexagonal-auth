@@ -31,7 +31,6 @@ export class JwtProviderAdapter implements TokenProviderPort {
       email: email.getValue(),
       jti: extra?.jti !== undefined ? String(extra.jti) : undefined,
     };
-    console.log('Generating JWT with payload:', payload);
     return this.jwtService.signAsync(payload, jwtConfig);
   }
 
@@ -57,7 +56,6 @@ export class JwtProviderAdapter implements TokenProviderPort {
   async decode(token: string): Promise<Readonly<TokenPayloadVo>> {
     try {
       const payload = this.jwtService.decode(token);
-      console.log('Decoded JWT payload:', payload);
       return TokenPayloadVo.of({
         userId: payload.userId,
         email: EmailVo.of(payload.email),
