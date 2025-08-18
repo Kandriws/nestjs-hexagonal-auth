@@ -17,6 +17,7 @@ import { allAuthProviders } from './auth.providers';
   imports: [
     PrismaModule,
     SharedModule,
+    ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync({
       imports: [ConfigModule.forFeature(jwtConfig)],
       useFactory: (cfg) => jwtModuleFactory(TokenType.ACCESS, cfg),
