@@ -27,9 +27,9 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
       }
 
       return TokenMapper.toDomain(token);
-    } catch (error) {
+    } catch {
       throw new PersistenceInfrastructureException(
-        `Error finding token by id: ${id}. ${error.message}`,
+        `Error finding token by id: ${id}.`,
       );
     }
   }
@@ -39,9 +39,9 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
       await this.prismaService.token.create({
         data: TokenMapper.toPersistence(token),
       });
-    } catch (error) {
+    } catch {
       throw new PersistenceInfrastructureException(
-        `Error saving token: ${error.message}`,
+        'Error saving token to the persistence layer',
       );
     }
   }
@@ -57,7 +57,7 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
       }
 
       throw new PersistenceInfrastructureException(
-        `Error deleting token by id: ${id}. ${error.message}`,
+        'Error deleting token from the persistence layer',
       );
     }
   }
@@ -67,9 +67,27 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
       await this.prismaService.token.deleteMany({
         where: { userId },
       });
-    } catch (error) {
+    } catch {
       throw new PersistenceInfrastructureException(
-        `Error deleting token by userId: ${userId}. ${error.message}`,
+        'Error deleting tokens by userId from the persistence layer',
+      );
+    }
+  }
+
+  async rotateToken(oldTokenId: string, newToken: Token): Promise<void> {
+    try {
+      const createData = TokenMapper.toPersistence(newToken);
+      await this.prismaService.$transaction([
+        this.prismaService.token.delete({ where: { id: oldTokenId } }),
+        this.prismaService.token.create({ data: createData }),
+      ]);
+    } catch (error) {
+      if (error && (error as any).code === 'P2025') {
+        throw new TokenNotFoundException();
+      }
+
+      throw new PersistenceInfrastructureException(
+        'Error rotating token in the persistence layer',
       );
     }
   }

@@ -4,6 +4,8 @@ import { PrismaService } from 'src/shared/infrastructure/prisma/prisma.service';
 import { PrismaUserMapper } from './mappers/prisma-user.mapper';
 import { Inject, Injectable } from '@nestjs/common';
 import { Email, UserId } from 'src/shared/domain/types';
+import { PersistenceInfrastructureException } from 'src/auth/domain/exceptions';
+import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
 
 @Injectable()
 export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
@@ -33,16 +35,25 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
 
   async save(user: User): Promise<void> {
     const prismaUser = PrismaUserMapper.toPersistence(user);
+    try {
+      await this.prismaService.user.upsert({
+        where: { id: user.id },
+        update: {
+          ...prismaUser,
+        },
+        create: {
+          id: user.id,
+          ...prismaUser,
+        },
+      });
+    } catch (error) {
+      if (error && error.code === 'P2002') {
+        throw new UserAlreadyExistsException();
+      }
 
-    await this.prismaService.user.upsert({
-      where: { id: user.id },
-      update: {
-        ...prismaUser,
-      },
-      create: {
-        id: user.id,
-        ...prismaUser,
-      },
-    });
+      throw new PersistenceInfrastructureException(
+        'Error saving user to the persistence layer',
+      );
+    }
   }
 }

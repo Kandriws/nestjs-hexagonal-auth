@@ -153,10 +153,13 @@ describe('RefreshTokenUseCase', () => {
       userAgent: 'agent',
     });
 
-    expect(mockTokenRepo.deleteByTokenId).toHaveBeenCalledWith(oldJti);
+    expect(mockTokenRepo.rotateToken).toHaveBeenCalledWith(
+      oldJti,
+      expect.any(Token),
+    );
     expect(mockUuid.generate).toHaveBeenCalled();
     expect(mockTokenProvider.generate).toHaveBeenCalledTimes(2);
-    expect(mockTokenRepo.save).toHaveBeenCalledWith(expect.any(Token));
+
     expect(res).toEqual({
       accessToken: 'access-token',
       refreshToken: 'refresh-token',

@@ -59,7 +59,6 @@ export class RefreshTokenUseCase implements RefreshTokenPort {
     if (!tokenRecord) {
       throw new TokenNotFoundException();
     }
-    await this.tokenRepository.deleteByTokenId(tokenId);
     const user = await this.userRepository.findById(tokenRecord.userId);
 
     const newTokenId = this.uuid.generate();
@@ -91,7 +90,7 @@ export class RefreshTokenUseCase implements RefreshTokenPort {
       },
     });
 
-    await this.tokenRepository.save(newToken);
+    await this.tokenRepository.rotateToken(tokenId, newToken);
 
     return {
       accessToken: newAccessToken as AccessToken,
