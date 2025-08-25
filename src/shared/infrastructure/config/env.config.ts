@@ -58,6 +58,9 @@ interface EnvConfig {
   security: {
     rateLimitProfile: string;
     saltRounds: number;
+    encryption: {
+      keysFilePath: string;
+    };
     otp: {
       channel: {
         email: {
@@ -148,6 +151,8 @@ const envVarsSchema = joi
       .default(15)
       .description('Time window for OTP rate limiting in minutes'),
 
+    ENCRYPTION_KEYS_FILE_PATH: joi.string().required(),
+
     // JWT
     JWT_ACCESS_SECRET: joi.string().required(),
     JWT_ACCESS_EXPIRATION: joi.string().default('15m'),
@@ -214,6 +219,9 @@ export const envs: EnvConfig = {
   security: {
     rateLimitProfile: value.RATE_LIMIT_PROFILE,
     saltRounds: value.SALT_ROUNDS,
+    encryption: {
+      keysFilePath: value.ENCRYPTION_KEYS_FILE_PATH,
+    },
     otp: {
       channel: {
         email: {

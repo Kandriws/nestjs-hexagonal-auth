@@ -8,7 +8,7 @@ const validationOptions: ValidationPipeOptions = {
     enableImplicitConversion: true,
     exposeDefaultValues: true,
   },
-  validateCustomDecorators: true,
+  validateCustomDecorators: false,
 };
 
 export const CustomValidationPipe = new ValidationPipe(validationOptions);

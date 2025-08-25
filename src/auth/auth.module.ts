@@ -10,13 +10,16 @@ import { JwtTokenConfigMapper } from './infrastructure/utils/jwt-token-config.ut
 import { TokenType } from './domain/enums';
 import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
 import { allAuthProviders } from './auth.providers';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 
 @Module({
   controllers: [AuthController],
-  providers: [JwtTokenConfigMapper, ...allAuthProviders],
+  providers: [JwtTokenConfigMapper, JwtStrategy, ...allAuthProviders],
   imports: [
     PrismaModule,
     SharedModule,
+    PassportModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync({
       imports: [ConfigModule.forFeature(jwtConfig)],

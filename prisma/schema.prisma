@@ -15,18 +15,19 @@ datasource db {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  email          String           @unique
-  password       String
-  firstName      String
-  lastName       String
-  verifiedAt     DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  Otp            Otp[]
-  OtpRateLimit   OtpRateLimit[]
-  UserSession    Token[]
-  LoginRateLimit LoginRateLimit[]
+  id                String             @id @default(uuid())
+  email             String             @unique
+  password          String
+  firstName         String
+  lastName          String
+  verifiedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  Otp               Otp[]
+  OtpRateLimit      OtpRateLimit[]
+  UserSession       Token[]
+  LoginRateLimit    LoginRateLimit[]
+  TwoFactorSettings TwoFactorSetting[]
 }
 
 enum OtpChannel {
@@ -38,6 +39,7 @@ enum OtpPurpose {
   EMAIL_VERIFICATION
   PASSWORD_RESET
   TWO_FACTOR_AUTHENTICATION
+  TWO_FACTOR_VERIFICATION
 }
 
 enum TokenType {
@@ -104,4 +106,29 @@ model OtpRateLimit {
   user        User       @relation(fields: [userId], references: [id])
 
   @@unique([userId, channel, purpose])
+}
+
+enum TwoFactorMethod {
+  TOTP
+  EMAIL_OTP
+  SMS_OTP
+}
+
+model TwoFactorSetting {
+  id                      String           @id @default(uuid())
+  userId                  String
+  isEnabled               Boolean          @default(false)
+  method                  TwoFactorMethod
+  secretCiphertext        String?
+  secretMetadata          String?
+  verifiedAt              DateTime?
+  lastUsedAt              DateTime?
+  pendingMethod           TwoFactorMethod?
+  pendingSecretCiphertext String?
+  pendingSecretMetadata   String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  user                    User             @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
 }

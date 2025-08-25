@@ -8,7 +8,9 @@ import {
 } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import {
+  EnableTwoFactorMapper,
   LoginUserMapper,
+  RefreshTokenMapper,
   RegisterUserMapper,
   ResendRegistrationOtpMapper,
   VerifyUserRegistrationMapper,
@@ -16,6 +18,7 @@ import {
 import { ApiResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
+  EnableTwoFactorPort,
   LoginUserPort,
   RefreshTokenPort,
   ResendRegistrationOtpPort,
@@ -27,7 +30,11 @@ import {
   RequestContext,
   RequestMetadata,
 } from 'src/shared/infrastructure/decorators/request-metadata.decorator';
-import { RefreshTokenMapper } from '../mappers/refresh-token.mapper';
+import { EnableTwoFactorDto } from '../dtos/enable-two-factor.dto';
+import { EnableTwoFactorResponse } from 'src/auth/domain/ports/outbound/commands/enable-two-factor-response';
+import { Public } from 'src/auth/infrastructure/decorators/public.decorator';
+import { CurrentUser } from 'src/auth/infrastructure/decorators/current-user.decorator';
+import { TokenPayloadVo } from 'src/auth/domain/value-objects';
 
 @Controller('auth')
 export class AuthController {
@@ -42,8 +49,11 @@ export class AuthController {
     private readonly loginUserPort: LoginUserPort,
     @Inject(RefreshTokenPort)
     private readonly refreshTokenPort: RefreshTokenPort,
+    @Inject(EnableTwoFactorPort)
+    private readonly enableTwoFactorPort: EnableTwoFactorPort,
   ) {}
 
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(
@@ -56,6 +66,7 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -71,6 +82,7 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Post('verify-registration')
   @HttpCode(HttpStatus.OK)
   async verifyRegistration(
@@ -83,6 +95,7 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Post('resend-registration-otp')
   @HttpCode(HttpStatus.OK)
   async resendRegistrationOtp(
@@ -106,6 +119,24 @@ export class AuthController {
     return ResponseFactory.ok<AuthTokensResponse>({
       data: response,
       message: 'Token refreshed successfully',
+    });
+  }
+
+  @Post('enable-two-factor')
+  @HttpCode(HttpStatus.OK)
+  async enableTwoFactor(
+    @Body() dto: EnableTwoFactorDto,
+    @CurrentUser() currentUser: TokenPayloadVo,
+  ): Promise<ApiResponse<EnableTwoFactorResponse>> {
+    dto.userId = currentUser.getUserId();
+    const command = EnableTwoFactorMapper.toCommand(dto);
+    const response = await this.enableTwoFactorPort.execute(
+      command.userId,
+      command.method,
+    );
+    return ResponseFactory.ok<EnableTwoFactorResponse>({
+      message: 'Two-factor authentication setup successfully',
+      data: response,
     });
   }
 }
