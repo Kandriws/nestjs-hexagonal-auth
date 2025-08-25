@@ -5,6 +5,7 @@ import {
   VerifyUserRegistrationDto,
   LoginUserDto,
   RefreshTokenDto,
+  VerifyTwoFactorDto,
 } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import {
@@ -13,6 +14,7 @@ import {
   RefreshTokenMapper,
   RegisterUserMapper,
   ResendRegistrationOtpMapper,
+  VerifyTwoFactorMapper,
   VerifyUserRegistrationMapper,
 } from '../mappers';
 import { ApiResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
@@ -22,6 +24,7 @@ import {
   LoginUserPort,
   RefreshTokenPort,
   ResendRegistrationOtpPort,
+  VerifyTwoFactorPort,
   VerifyUserRegistrationPort,
 } from 'src/auth/domain/ports/inbound';
 import { ResendRegistrationOtpDto } from '../dtos/resend-registration-otp.dto';
@@ -51,6 +54,8 @@ export class AuthController {
     private readonly refreshTokenPort: RefreshTokenPort,
     @Inject(EnableTwoFactorPort)
     private readonly enableTwoFactorPort: EnableTwoFactorPort,
+    @Inject(VerifyTwoFactorPort)
+    private readonly verifyTwoFactorPort: VerifyTwoFactorPort,
   ) {}
 
   @Public()
@@ -135,8 +140,23 @@ export class AuthController {
       command.method,
     );
     return ResponseFactory.ok<EnableTwoFactorResponse>({
-      message: 'Two-factor authentication setup successfully',
+      message:
+        'Two-factor authentication setup successfully, please send the verification code to verify',
       data: response,
+    });
+  }
+
+  @Post('verify-two-factor')
+  @HttpCode(HttpStatus.OK)
+  async verifyTwoFactor(
+    @Body() dto: VerifyTwoFactorDto,
+    @CurrentUser() currentUser: TokenPayloadVo,
+  ): Promise<ApiResponse<MessageResponseDto>> {
+    dto.userId = currentUser.getUserId();
+    const command = VerifyTwoFactorMapper.toCommand(dto);
+    await this.verifyTwoFactorPort.execute(command);
+    return ResponseFactory.ok<MessageResponseDto>({
+      message: 'Two-factor authentication verified successfully',
     });
   }
 }

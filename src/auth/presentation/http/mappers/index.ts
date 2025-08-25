@@ -3,4 +3,5 @@ export * from './login-user.mapper';
 export * from './refresh-token.mapper';
 export * from './register-user.mapper';
 export * from './resend-registration-otp.mapper';
+export * from './verify-two-factor.mapper';
 export * from './verify-user-registration.mapper';

@@ -24,27 +24,30 @@ describe('VerifyUserRegistrationUseCase', () => {
   let otpRepository: jest.Mocked<OtpRepositoryPort>;
 
   const mockUserId = 'user-123' as UserId;
-  const mockUser = User.create({
-    id: mockUserId,
-    email: 'test@example.com',
-    password: 'ValidPass123!',
-    firstName: 'John',
-    lastName: 'Doe',
-  });
 
-  const mockOtp = Otp.create({
-    id: 'otp-123',
-    userId: mockUserId,
-    code: OtpCodeVo.of('123456'),
-    channel: OtpChannel.EMAIL,
-    purpose: OtpPurpose.EMAIL_VERIFICATION,
-    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-  });
+  let mockUser: User;
+  let mockOtp: Otp;
+  let validCommand: VerifyUserRegistrationCommand;
 
-  const validCommand: VerifyUserRegistrationCommand = {
-    email: EmailVo.of('test@example.com'),
-    otpCode: OtpCodeVo.of('123456'),
-  };
+  const createMockUser = () =>
+    User.create({
+      id: mockUserId,
+      email: 'test@example.com',
+      password: 'ValidPass123!',
+      firstName: 'John',
+      lastName: 'Doe',
+    });
+
+  const createMockOtp = (overrides?: any) =>
+    Otp.create({
+      id: 'otp-123',
+      userId: mockUserId,
+      code: OtpCodeVo.of('123456'),
+      channel: OtpChannel.EMAIL,
+      purpose: OtpPurpose.EMAIL_VERIFICATION,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      ...overrides,
+    });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -72,20 +75,24 @@ describe('VerifyUserRegistrationUseCase', () => {
     );
     userRepository = module.get(UserRepositoryPort);
     otpRepository = module.get(OtpRepositoryPort);
+
+    mockUser = createMockUser();
+    mockOtp = createMockOtp();
+    validCommand = {
+      email: EmailVo.of('test@example.com'),
+      otpCode: OtpCodeVo.of('123456'),
+    };
   });
 
   describe('execute', () => {
     it('should verify user registration successfully', async () => {
-      // Arrange
       userRepository.findByEmail.mockResolvedValue(mockUser);
       otpRepository.findByUserIdAndCode.mockResolvedValue(mockOtp);
       userRepository.save.mockResolvedValue();
       otpRepository.save.mockResolvedValue();
 
-      // Act
       await useCase.execute(validCommand);
 
-      // Assert
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
         'test@example.com',
       );
@@ -106,10 +113,8 @@ describe('VerifyUserRegistrationUseCase', () => {
     });
 
     it('should throw UserNotFoundException when user not found', async () => {
-      // Arrange
       userRepository.findByEmail.mockResolvedValue(null);
 
-      // Act & Assert
       await expect(useCase.execute(validCommand)).rejects.toThrow(
         UserNotFoundException,
       );
@@ -117,11 +122,9 @@ describe('VerifyUserRegistrationUseCase', () => {
     });
 
     it('should throw OtpNotFoundException when OTP not found', async () => {
-      // Arrange
       userRepository.findByEmail.mockResolvedValue(mockUser);
       otpRepository.findByUserIdAndCode.mockResolvedValue(null);
 
-      // Act & Assert
       await expect(useCase.execute(validCommand)).rejects.toThrow(
         OtpNotFoundException,
       );
@@ -129,7 +132,6 @@ describe('VerifyUserRegistrationUseCase', () => {
     });
 
     it('should throw OtpExpiredException when OTP is expired', async () => {
-      // Arrange
       const expiredOtp = Otp.reconstitute({
         id: 'otp-expired',
         userId: mockUserId,
@@ -145,7 +147,6 @@ describe('VerifyUserRegistrationUseCase', () => {
       userRepository.findByEmail.mockResolvedValue(mockUser);
       otpRepository.findByUserIdAndCode.mockResolvedValue(expiredOtp);
 
-      // Act & Assert
       await expect(useCase.execute(validCommand)).rejects.toThrow(
         OtpExpiredException,
       );
@@ -153,12 +154,11 @@ describe('VerifyUserRegistrationUseCase', () => {
     });
 
     it('should throw OtpAlreadyUsedException when OTP is already used', async () => {
-      // Arrange
-      const usedOtp = mockOtp.markAsUsed();
+      const usedOtp = createMockOtp();
+      usedOtp.markAsUsedFor(OtpPurpose.EMAIL_VERIFICATION);
       userRepository.findByEmail.mockResolvedValue(mockUser);
       otpRepository.findByUserIdAndCode.mockResolvedValue(usedOtp);
 
-      // Act & Assert
       await expect(useCase.execute(validCommand)).rejects.toThrow(
         OtpAlreadyUsedException,
       );
@@ -166,7 +166,6 @@ describe('VerifyUserRegistrationUseCase', () => {
     });
 
     it('should throw InvalidOtpPurposeException when OTP purpose is wrong', async () => {
-      // Arrange
       const wrongPurposeOtp = Otp.reconstitute({
         id: 'otp-wrong-purpose',
         userId: mockUserId,
@@ -182,7 +181,6 @@ describe('VerifyUserRegistrationUseCase', () => {
       userRepository.findByEmail.mockResolvedValue(mockUser);
       otpRepository.findByUserIdAndCode.mockResolvedValue(wrongPurposeOtp);
 
-      // Act & Assert
       await expect(useCase.execute(validCommand)).rejects.toThrow(
         InvalidOtpPurposeException,
       );

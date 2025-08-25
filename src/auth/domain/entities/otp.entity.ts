@@ -4,6 +4,10 @@ import { OtpExpiredException } from '../exceptions/otp-expired.exception';
 import { CreateOtpDto } from '../dtos/create-otp.dto';
 import { OtpChannel, OtpPurpose } from '../enums';
 import { Entity } from 'src/shared/domain/entities/entity';
+import {
+  InvalidOtpPurposeException,
+  OtpAlreadyUsedException,
+} from '../exceptions';
 
 interface OtpProps {
   id: string;
@@ -103,12 +107,17 @@ export class Otp extends Entity<OtpProps> {
     return this.usedAt !== null;
   }
 
-  markAsUsed(): Otp {
-    return new Otp({
-      ...this.props,
-      usedAt: new Date(),
-      updatedAt: new Date(),
-    });
+  markAsUsedFor(purpose: OtpPurpose): void {
+    if (this.isExpired()) throw new OtpExpiredException();
+    if (this.isUsed()) throw new OtpAlreadyUsedException();
+    if (this.purpose !== purpose) {
+      throw new InvalidOtpPurposeException(
+        `Invalid OTP purpose: ${this.purpose}`,
+      );
+    }
+
+    this.props.usedAt = new Date();
+    this.props.updatedAt = new Date();
   }
 
   markAsRevoked(): Otp {

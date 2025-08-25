@@ -5,6 +5,7 @@ import {
   LoginUserPort,
   RefreshTokenPort,
   EnableTwoFactorPort,
+  VerifyTwoFactorPort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
@@ -57,6 +58,7 @@ import {
   RefreshTokenUseCase,
   RegisterUserUseCase,
   ResendRegistrationOtpUseCase,
+  VerifyTwoFactorUseCase,
   VerifyUserRegistrationUseCase,
 } from './application/use-cases';
 import { FileEncryptionKeyStoreAdapter } from './infrastructure/adapters/outbound/security/file-encryption-key-store.adapter';
@@ -85,6 +87,10 @@ export const useCaseProviders = [
   {
     provide: EnableTwoFactorPort,
     useClass: EnableTwoFactorUseCase,
+  },
+  {
+    provide: VerifyTwoFactorPort,
+    useClass: VerifyTwoFactorUseCase,
   },
 ];
 

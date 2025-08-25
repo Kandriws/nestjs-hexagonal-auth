@@ -1,8 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  InvalidOtpPurposeException,
-  OtpAlreadyUsedException,
-  OtpExpiredException,
   OtpNotFoundException,
   UserNotFoundException,
 } from 'src/auth/domain/exceptions';
@@ -45,24 +42,10 @@ export class VerifyUserRegistrationUseCase
       throw new OtpNotFoundException();
     }
 
-    if (otpRecord.isExpired()) {
-      throw new OtpExpiredException();
-    }
-
-    if (otpRecord.isUsed()) {
-      throw new OtpAlreadyUsedException();
-    }
-
-    if (otpRecord.purpose !== OtpPurpose.EMAIL_VERIFICATION) {
-      throw new InvalidOtpPurposeException(
-        `Invalid OTP purpose: ${otpRecord.purpose}`,
-      );
-    }
-
-    const usedOtp = otpRecord.markAsUsed();
+    otpRecord.markAsUsedFor(OtpPurpose.EMAIL_VERIFICATION);
     const verifiedUser = user.markAsVerified();
 
-    await this.otpRepository.save(usedOtp);
+    await this.otpRepository.save(otpRecord);
     await this.userRepository.save(verifiedUser);
   }
 }

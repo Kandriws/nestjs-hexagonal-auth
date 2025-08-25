@@ -6,6 +6,10 @@ import {
 } from '../enums/enable-two-factor-decision.enum';
 import { Entity } from 'src/shared/domain/entities';
 import { SecretMetadata } from '../types/encryption.type';
+import {
+  InvalidMethodTwoFactorSettingException,
+  TwoFactorSettingAlreadyVerifiedException,
+} from '../exceptions';
 
 export interface TwoFactorSettingProps {
   id: string;
@@ -106,9 +110,15 @@ export class TwoFactorSetting extends Entity<TwoFactorSettingProps> {
     return this.props.updatedAt;
   }
 
-  enable(method: TwoFactorMethod): void {
+  verify(method: TwoFactorMethod): void {
+    if (this.props.verifiedAt)
+      throw new TwoFactorSettingAlreadyVerifiedException();
+
+    if (!this.isMatchingMethod(method))
+      throw new InvalidMethodTwoFactorSettingException();
+
     this.props.isEnabled = true;
-    this.props.method = method;
+    this.props.verifiedAt = new Date();
     this.props.updatedAt = new Date();
   }
 
