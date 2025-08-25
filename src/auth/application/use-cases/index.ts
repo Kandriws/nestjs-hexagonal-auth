@@ -1,3 +1,4 @@
+export * from './enable-two-factor.use-case';
 export * from './login-user.use-case';
 export * from './refresh-token.use-case';
 export * from './register-user.use-case';

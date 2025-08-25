@@ -4,6 +4,9 @@ import { envs } from './env.config';
 export default registerAs('security', () => ({
   rateLimitProfile: envs.security.rateLimitProfile,
   saltRounds: envs.security.saltRounds,
+  encryption: {
+    keysFilePath: envs.security.encryption.keysFilePath,
+  },
   otp: {
     channel: {
       email: {

@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { LOCK_POLICIES } from 'src/auth/domain/constants/lock-policies.constant';
 import { RateLimitWindow } from 'src/auth/domain/entities/rate-limit-window.entity';
-import { LoginRateLimitExceededException } from 'src/auth/domain/exceptions';
+import {
+  LoginRateLimitExceededException,
+  PersistenceInfrastructureException,
+} from 'src/auth/domain/exceptions';
 import { LoginRateLimitPort } from 'src/auth/domain/ports/outbound/policy/login-rate-limit.port';
 import { RateLimitInfo } from 'src/auth/domain/types/rate-limit-info.type';
 import { Threshold } from 'src/auth/domain/value-objects/threshold.vo';
@@ -76,10 +79,17 @@ export class PrismaLoginRateLimitAdapter implements LoginRateLimitPort {
   }
 
   async reset(userId: string): Promise<void> {
-    await this.prisma.loginRateLimit
-      .delete({
+    try {
+      await this.prisma.loginRateLimit.delete({
         where: { userId },
-      })
-      .catch(() => {});
+      });
+    } catch (error) {
+      if (error?.code === 'P2025') {
+        return;
+      }
+      throw new PersistenceInfrastructureException(
+        'An error occurred while resetting login rate limit',
+      );
+    }
   }
 }

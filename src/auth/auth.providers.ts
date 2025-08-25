@@ -4,17 +4,22 @@ import {
   VerifyUserRegistrationPort,
   LoginUserPort,
   RefreshTokenPort,
+  EnableTwoFactorPort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
   TokenRepositoryPort,
+  TwoFactorSettingRepositoryPort,
   UserRepositoryPort,
 } from './domain/ports/outbound/persistence';
 import {
+  EncryptionKeyStorePort,
+  EncryptionPort,
   HasherPort,
   OtpGeneratorPort,
   OtpSenderPort,
   TokenProviderPort,
+  TOTPPort,
   UUIDPort,
 } from './domain/ports/outbound/security';
 import {
@@ -28,12 +33,15 @@ import {
   PrismaOtpRepositoryAdapter,
   PrismaUserRepositoryAdapter,
   PrismaTokenRepositoryAdapter,
+  PrismaTwoFactorSettingRepositoryAdapter,
 } from './infrastructure/adapters/outbound/persistence';
 import {
+  AesGcmEncryptionAdapter,
   BcryptHasherAdapter,
   CryptoUUIDAdapter,
   JwtProviderAdapter,
   OtpGeneratorAdapter,
+  OtplibTotpAdapter,
   OtpSenderAdapter,
 } from './infrastructure/adapters/outbound/security';
 import {
@@ -44,12 +52,14 @@ import {
 import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
 
 import {
+  EnableTwoFactorUseCase,
   LoginUserUseCase,
   RefreshTokenUseCase,
   RegisterUserUseCase,
   ResendRegistrationOtpUseCase,
   VerifyUserRegistrationUseCase,
 } from './application/use-cases';
+import { FileEncryptionKeyStoreAdapter } from './infrastructure/adapters/outbound/security/file-encryption-key-store.adapter';
 
 export const useCaseProviders = [
   {
@@ -72,6 +82,10 @@ export const useCaseProviders = [
     provide: RefreshTokenPort,
     useClass: RefreshTokenUseCase,
   },
+  {
+    provide: EnableTwoFactorPort,
+    useClass: EnableTwoFactorUseCase,
+  },
 ];
 
 export const persistenceProviders = [
@@ -86,6 +100,10 @@ export const persistenceProviders = [
   {
     provide: TokenRepositoryPort,
     useClass: PrismaTokenRepositoryAdapter,
+  },
+  {
+    provide: TwoFactorSettingRepositoryPort,
+    useClass: PrismaTwoFactorSettingRepositoryAdapter,
   },
 ];
 
@@ -109,6 +127,18 @@ export const securityProviders = [
   {
     provide: OtpSenderPort,
     useClass: OtpSenderAdapter,
+  },
+  {
+    provide: TOTPPort,
+    useClass: OtplibTotpAdapter,
+  },
+  {
+    provide: EncryptionKeyStorePort,
+    useClass: FileEncryptionKeyStoreAdapter,
+  },
+  {
+    provide: EncryptionPort,
+    useClass: AesGcmEncryptionAdapter,
   },
 ];
 

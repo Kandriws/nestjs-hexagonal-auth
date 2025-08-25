@@ -38,6 +38,7 @@ if (process.env.DOCKER_ENV === 'true') {
 interface EnvConfig {
   app: {
     env: string;
+    name: string;
     host: string;
     port: number;
     isProduction: boolean;
@@ -58,6 +59,9 @@ interface EnvConfig {
   security: {
     rateLimitProfile: string;
     saltRounds: number;
+    encryption: {
+      keysFilePath: string;
+    };
     otp: {
       channel: {
         email: {
@@ -111,6 +115,7 @@ const envVarsSchema = joi
       .string()
       .valid('development', 'production', 'test')
       .required(),
+    NAME: joi.string().default('AuthHexArchBackend'),
     HOST: joi.string().default('localhost'),
     PORT: joi.number().default(3000),
 
@@ -147,6 +152,8 @@ const envVarsSchema = joi
       .number()
       .default(15)
       .description('Time window for OTP rate limiting in minutes'),
+
+    ENCRYPTION_KEYS_FILE_PATH: joi.string().required(),
 
     // JWT
     JWT_ACCESS_SECRET: joi.string().required(),
@@ -194,6 +201,7 @@ if (!value.DATABASE_URL) {
 export const envs: EnvConfig = {
   app: {
     env: value.NODE_ENV,
+    name: value.NAME,
     host: value.HOST,
     port: value.PORT,
     isProduction: value.NODE_ENV === 'production',
@@ -214,6 +222,9 @@ export const envs: EnvConfig = {
   security: {
     rateLimitProfile: value.RATE_LIMIT_PROFILE,
     saltRounds: value.SALT_ROUNDS,
+    encryption: {
+      keysFilePath: value.ENCRYPTION_KEYS_FILE_PATH,
+    },
     otp: {
       channel: {
         email: {

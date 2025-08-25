@@ -1,4 +1,6 @@
+export * from './encryption-key-not-found.exception';
 export * from './invalid-credentials.exception';
+export * from './invalid-encryption-key.exception';
 export * from './invalid-otp-code.exception';
 export * from './invalid-otp-purpose.exception';
 export * from './invalid-token-payload.exception';
@@ -9,6 +11,8 @@ export * from './otp-not-found.exception';
 export * from './otp-rate-limit-exceeded.exception';
 export * from './persistence-infrastructure.exception';
 export * from './token-not-found.exception';
+export * from './two-factor-setting-already-enabled.exception';
+export * from './two-factor-setting-already-exists.exception';
 export * from './unknown-otp-channel.exception';
 export * from './unknown-token-type.exception';
 export * from './user-already-exists.exception';
