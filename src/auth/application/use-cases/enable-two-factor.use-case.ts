@@ -36,6 +36,33 @@ export class EnableTwoFactorUseCase implements EnableTwoFactorPort {
     @Inject(UUIDPort)
     private readonly uuid: UUIDPort,
   ) {}
+
+  private async generateEncryptedTotpSecret() {
+    const totpSecret = await this.totp.generateSecret();
+    const encrypted = await this.encryption.encrypt(totpSecret);
+    return { totpSecret, encrypted };
+  }
+
+  private getOtpChannelForMethod(method: TwoFactorMethod): OtpChannel {
+    return method === TwoFactorMethod.EMAIL_OTP
+      ? OtpChannel.EMAIL
+      : OtpChannel.SMS;
+  }
+
+  private async sendTwoFactorOtp(
+    userId: UserId,
+    contact: string,
+    method: TwoFactorMethod,
+  ) {
+    const channel = this.getOtpChannelForMethod(method);
+    await this.otpSender.sendOtp({
+      userId,
+      contact,
+      channel,
+      purpose: OtpPurpose.TWO_FACTOR_VERIFICATION,
+    });
+  }
+
   async execute(
     userId: UserId,
     method: TwoFactorMethod,
@@ -54,33 +81,23 @@ export class EnableTwoFactorUseCase implements EnableTwoFactorPort {
       const newSetting = TwoFactorSetting.create(newId, userId, method);
 
       await this.twoFactorSettingRepository.save(newSetting);
+
       if (method === TwoFactorMethod.TOTP) {
-        const totpSecret = await this.totp.generateSecret();
-        const encrypted = await this.encryption.encrypt(totpSecret);
+        const { totpSecret, encrypted } =
+          await this.generateEncryptedTotpSecret();
 
         newSetting.updateToTotp(encrypted.ciphertext, encrypted.metadata);
-
         await this.twoFactorSettingRepository.save(newSetting);
 
         return {
           otpauthUri: await this.totp.generateUri(
             totpSecret,
             user.email.getValue(),
-            'MyApp',
           ),
         };
       }
 
-      await this.otpSender.sendOtp({
-        userId: user.id,
-        contact: user.email.getValue(),
-        channel:
-          method === TwoFactorMethod.EMAIL_OTP
-            ? OtpChannel.EMAIL
-            : OtpChannel.SMS,
-        purpose: OtpPurpose.TWO_FACTOR_VERIFICATION,
-      });
-
+      await this.sendTwoFactorOtp(user.id, user.email.getValue(), method);
       return null;
     }
 
@@ -88,24 +105,13 @@ export class EnableTwoFactorUseCase implements EnableTwoFactorPort {
 
     switch (decision.type) {
       case EnableTwoFactorDecisionType.SEND_OTP: {
-        const channel =
-          method === TwoFactorMethod.EMAIL_OTP
-            ? OtpChannel.EMAIL
-            : OtpChannel.SMS;
-
-        await this.otpSender.sendOtp({
-          userId: user.id,
-          contact: user.email.getValue(),
-          channel,
-          purpose: OtpPurpose.TWO_FACTOR_VERIFICATION,
-        });
-
+        await this.sendTwoFactorOtp(user.id, user.email.getValue(), method);
         return null;
       }
 
       case EnableTwoFactorDecisionType.GENERATE_TOTP: {
-        const totpSecret = await this.totp.generateSecret();
-        const encrypted = await this.encryption.encrypt(totpSecret);
+        const { totpSecret, encrypted } =
+          await this.generateEncryptedTotpSecret();
 
         twoFactorSetting.initializePendingTwoFactorState(
           method,
@@ -119,15 +125,14 @@ export class EnableTwoFactorUseCase implements EnableTwoFactorPort {
           otpauthUri: await this.totp.generateUri(
             totpSecret,
             user.email.getValue(),
-            'MyApp',
           ),
         };
       }
 
       case EnableTwoFactorDecisionType.GENERATE_OTP: {
         if (method === TwoFactorMethod.TOTP) {
-          const totpSecret = await this.totp.generateSecret();
-          const encrypted = await this.encryption.encrypt(totpSecret);
+          const { totpSecret, encrypted } =
+            await this.generateEncryptedTotpSecret();
 
           twoFactorSetting.initializePendingTwoFactorState(
             method,
@@ -141,23 +146,11 @@ export class EnableTwoFactorUseCase implements EnableTwoFactorPort {
             otpauthUri: await this.totp.generateUri(
               totpSecret,
               user.email.getValue(),
-              'MyApp',
             ),
           };
         }
 
-        const channel =
-          method === TwoFactorMethod.EMAIL_OTP
-            ? OtpChannel.EMAIL
-            : OtpChannel.SMS;
-
-        await this.otpSender.sendOtp({
-          userId: user.id,
-          contact: user.email.getValue(),
-          channel,
-          purpose: OtpPurpose.TWO_FACTOR_VERIFICATION,
-        });
-
+        await this.sendTwoFactorOtp(user.id, user.email.getValue(), method);
         return null;
       }
 

@@ -38,6 +38,7 @@ if (process.env.DOCKER_ENV === 'true') {
 interface EnvConfig {
   app: {
     env: string;
+    name: string;
     host: string;
     port: number;
     isProduction: boolean;
@@ -114,6 +115,7 @@ const envVarsSchema = joi
       .string()
       .valid('development', 'production', 'test')
       .required(),
+    NAME: joi.string().default('AuthHexArchBackend'),
     HOST: joi.string().default('localhost'),
     PORT: joi.number().default(3000),
 
@@ -199,6 +201,7 @@ if (!value.DATABASE_URL) {
 export const envs: EnvConfig = {
   app: {
     env: value.NODE_ENV,
+    name: value.NAME,
     host: value.HOST,
     port: value.PORT,
     isProduction: value.NODE_ENV === 'production',

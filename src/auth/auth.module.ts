@@ -12,6 +12,7 @@ import { jwtModuleFactory } from './infrastructure/config/jwt-module.factory';
 import { allAuthProviders } from './auth.providers';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
+import appConfig from 'src/shared/infrastructure/config/app.config';
 
 @Module({
   controllers: [AuthController],
@@ -27,6 +28,7 @@ import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
       inject: [jwtConfig.KEY],
     }),
     ConfigModule.forFeature(securityConfig),
+    ConfigModule.forFeature(appConfig),
   ],
 })
 export class AuthModule {}

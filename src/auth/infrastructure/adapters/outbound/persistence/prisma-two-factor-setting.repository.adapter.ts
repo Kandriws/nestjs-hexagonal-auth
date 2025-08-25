@@ -31,7 +31,6 @@ export class PrismaTwoFactorSettingRepositoryAdapter
     try {
       const prismaTwoFactorSetting =
         PrismaTwoFactorSettingMapper.toPersistence(twoFactorSetting);
-      console.log('Saving two-factor setting:', prismaTwoFactorSetting);
 
       const { userId: _userId, ...createPayload } = prismaTwoFactorSetting;
       await this.prismaService.twoFactorSetting.upsert({
