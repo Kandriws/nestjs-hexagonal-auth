@@ -6,10 +6,12 @@ import {
   LoginUserDto,
   RefreshTokenDto,
   VerifyTwoFactorDto,
+  ForgotPasswordDto,
 } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import {
   EnableTwoFactorMapper,
+  ForgotPasswordMapper,
   LoginUserMapper,
   RefreshTokenMapper,
   RegisterUserMapper,
@@ -21,6 +23,7 @@ import { ApiResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
   EnableTwoFactorPort,
+  ForgotPasswordPort,
   LoginUserPort,
   RefreshTokenPort,
   ResendRegistrationOtpPort,
@@ -56,6 +59,8 @@ export class AuthController {
     private readonly enableTwoFactorPort: EnableTwoFactorPort,
     @Inject(VerifyTwoFactorPort)
     private readonly verifyTwoFactorPort: VerifyTwoFactorPort,
+    @Inject(ForgotPasswordPort)
+    private readonly forgotPasswordPort: ForgotPasswordPort,
   ) {}
 
   @Public()
@@ -157,6 +162,20 @@ export class AuthController {
     await this.verifyTwoFactorPort.execute(command);
     return ResponseFactory.ok<MessageResponseDto>({
       message: 'Two-factor authentication verified successfully',
+    });
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+    @RequestMetadata() requestContext: RequestContext,
+  ): Promise<ApiResponse<MessageResponseDto>> {
+    const command = ForgotPasswordMapper.toCommand(dto, requestContext);
+    await this.forgotPasswordPort.execute(command);
+    return ResponseFactory.ok<MessageResponseDto>({
+      message: 'Password reset email sent successfully',
     });
   }
 }

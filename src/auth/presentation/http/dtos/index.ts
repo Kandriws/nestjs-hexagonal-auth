@@ -1,3 +1,4 @@
+export * from './forgot-password.dto';
 export * from './login-user.dto';
 export * from './message-response.dto';
 export * from './refresh-token.dto';

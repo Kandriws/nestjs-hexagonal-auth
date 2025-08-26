@@ -44,6 +44,7 @@ interface EnvConfig {
     isProduction: boolean;
     isDevelopment: boolean;
     isTest: boolean;
+    resetPasswordFrontendUrl: string;
   };
   mail: {
     host: string;
@@ -118,6 +119,7 @@ const envVarsSchema = joi
     NAME: joi.string().default('AuthHexArchBackend'),
     HOST: joi.string().default('localhost'),
     PORT: joi.number().default(3000),
+    RESET_PASSWORD_FRONTEND_URL: joi.string().uri().required(),
 
     // Mailer
     MAIL_HOST: joi.string().required(),
@@ -207,6 +209,7 @@ export const envs: EnvConfig = {
     isProduction: value.NODE_ENV === 'production',
     isDevelopment: value.NODE_ENV === 'development',
     isTest: value.NODE_ENV === 'test',
+    resetPasswordFrontendUrl: value.RESET_PASSWORD_FRONTEND_URL,
   },
   mail: {
     host: value.MAIL_HOST,
