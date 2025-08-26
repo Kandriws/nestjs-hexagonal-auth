@@ -42,7 +42,7 @@ export class VerifyUserRegistrationUseCase
       throw new OtpNotFoundException();
     }
 
-    otpRecord.markAsUsedFor(OtpPurpose.EMAIL_VERIFICATION);
+    await otpRecord.markAsUsedFor(OtpPurpose.EMAIL_VERIFICATION);
     const verifiedUser = user.markAsVerified();
 
     await this.otpRepository.save(otpRecord);

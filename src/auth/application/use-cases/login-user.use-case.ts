@@ -6,17 +6,24 @@ import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-
 import { LoginUserCommand } from 'src/auth/domain/ports/inbound/commands/login-user.command';
 import { LoginUserPort } from 'src/auth/domain/ports/inbound/login-user.port';
 import {
+  OtpRepositoryPort,
   TokenRepositoryPort,
+  TwoFactorSettingRepositoryPort,
   UserRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
 import {
+  EncryptionPort,
   HasherPort,
   OtpSenderPort,
   TokenProviderPort,
+  TOTPPort,
   UUIDPort,
 } from 'src/auth/domain/ports/outbound/security';
 import {
   InvalidCredentialsException,
+  InvalidTotpCodeException,
+  OtpCodeRequiredException,
+  OtpNotFoundException,
   UserNotVerifiedException,
 } from 'src/auth/domain/exceptions';
 import { LoginRateLimitPort } from 'src/auth/domain/ports/outbound/policy';
@@ -39,6 +46,14 @@ export class LoginUserUseCase implements LoginUserPort {
     private otpSender: OtpSenderPort,
     @Inject(LoginRateLimitPort)
     private loginRateLimit: LoginRateLimitPort,
+    @Inject(TwoFactorSettingRepositoryPort)
+    private twoFactorSettingRepository: TwoFactorSettingRepositoryPort,
+    @Inject(TOTPPort)
+    private totp: TOTPPort,
+    @Inject(EncryptionPort)
+    private encryption: EncryptionPort,
+    @Inject(OtpRepositoryPort)
+    private otpRepository: OtpRepositoryPort,
   ) {}
 
   async execute(command: LoginUserCommand): Promise<AuthTokensResponse> {
@@ -66,6 +81,19 @@ export class LoginUserUseCase implements LoginUserPort {
       );
     }
 
+    const twoFactorSettingRecord =
+      await this.twoFactorSettingRepository.findByUserId(user.id);
+    if (
+      twoFactorSettingRecord !== null &&
+      twoFactorSettingRecord.isVerificationNeeded()
+    ) {
+      await this.handleTwoFactorAuthentication(
+        user,
+        command,
+        twoFactorSettingRecord,
+      );
+    }
+
     const isValid = await this.hasher.compare(
       command.password.getValue(),
       user.password.getValue(),
@@ -82,7 +110,92 @@ export class LoginUserUseCase implements LoginUserPort {
     }
 
     await this.loginRateLimit.reset(user.id);
+    return this.createAndPersistTokens(user, command);
+  }
 
+  private async handleTwoFactorAuthentication(
+    user: any,
+    command: LoginUserCommand,
+    twoFactorSettingRecord: any,
+  ): Promise<void> {
+    // If OTP is required but not provided -> send OTP when notifyable, otherwise ask for TOTP
+    if (!command.otpCode) {
+      if (twoFactorSettingRecord.isMethodNotifyable()) {
+        const purpose: OtpPurpose = OtpPurpose.TWO_FACTOR_AUTHENTICATION;
+        await this.otpSender.sendOtp({
+          userId: user.id,
+          contact: user.email.getValue(),
+          channel: twoFactorSettingRecord.parseTwoFactorMethodToOtpChannel(),
+          purpose,
+        });
+
+        throw new OtpCodeRequiredException(
+          `Two-factor authentication is required. Please check your ${twoFactorSettingRecord.parseTwoFactorMethodToOtpChannel()} for the OTP code.`,
+        );
+      }
+
+      throw new OtpCodeRequiredException(
+        `Two-factor authentication is required. Please check your authenticator app for the OTP code.`,
+      );
+    }
+
+    const isDecryptionRequired = !twoFactorSettingRecord.isMethodNotifyable();
+
+    if (isDecryptionRequired) {
+      const decryptedOtp = await this.encryption.decrypt(
+        twoFactorSettingRecord.secretCiphertext,
+        twoFactorSettingRecord.secretMetadata,
+      );
+
+      const isTotpValid = await this.totp.verify(
+        decryptedOtp.plaintext,
+        command.otpCode.getValue(),
+      );
+
+      if (!isTotpValid) {
+        const rateLimitInfo: RateLimitInfo = await this.loginRateLimit.hit(
+          user.id,
+        );
+        throw new InvalidTotpCodeException(
+          `Invalid TOTP code. Attempts: ${rateLimitInfo.attempts}, remaining: ${rateLimitInfo.remainingAttempts}`,
+        );
+      }
+
+      return;
+    }
+
+    const otpRecord = await this.otpRepository.findByUserIdAndCode(
+      user.id,
+      command.otpCode.getValue(),
+    );
+
+    if (!otpRecord) {
+      const rateLimitInfo: RateLimitInfo = await this.loginRateLimit.hit(
+        user.id,
+      );
+      throw new OtpNotFoundException(
+        `Invalid OTP code. Attempts: ${rateLimitInfo.attempts}, remaining: ${rateLimitInfo.remainingAttempts}`,
+      );
+    }
+
+    const callback = async (): Promise<string> => {
+      const rateLimitInfo: RateLimitInfo = await this.loginRateLimit.hit(
+        user.id,
+      );
+      return `Attempts: ${rateLimitInfo.attempts}, remaining: ${rateLimitInfo.remainingAttempts}`;
+    };
+
+    await otpRecord.markAsUsedFor(
+      OtpPurpose.TWO_FACTOR_AUTHENTICATION,
+      callback,
+    );
+    await this.otpRepository.save(otpRecord);
+  }
+
+  private async createAndPersistTokens(
+    user: any,
+    command: LoginUserCommand,
+  ): Promise<AuthTokensResponse> {
     const tokenId = this.uuid.generate();
 
     const accessToken = await this.tokenProvider.generate(

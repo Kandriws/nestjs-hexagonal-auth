@@ -8,5 +8,5 @@ export class VerifyTwoFactorDto {
   @IsEnum(TwoFactorMethod)
   method: TwoFactorMethod;
   @IsString()
-  code: string;
+  otpCode: string;
 }

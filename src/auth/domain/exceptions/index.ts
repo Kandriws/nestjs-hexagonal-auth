@@ -11,6 +11,7 @@ export * from './otp-already-used.exception';
 export * from './otp-expired.exception';
 export * from './otp-not-found.exception';
 export * from './otp-rate-limit-exceeded.exception';
+export * from './otp-code-required.exception';
 export * from './persistence-infrastructure.exception';
 export * from './token-not-found.exception';
 export * from './two-factor-setting-already-enabled.exception';

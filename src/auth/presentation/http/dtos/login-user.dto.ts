@@ -1,4 +1,9 @@
-import { IsEmail, IsStrongPassword } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 
 const strongPasswordOptions = {
   minLength: 8,
@@ -14,4 +19,8 @@ export class LoginUserDto {
 
   @IsStrongPassword(strongPasswordOptions)
   password: string;
+
+  @IsOptional()
+  @IsString()
+  otpCode: string;
 }

@@ -1,5 +1,5 @@
 import { UserId } from 'src/shared/domain/types';
-import { TwoFactorMethod } from '../enums';
+import { OtpChannel, TwoFactorMethod } from '../enums';
 import {
   EnableTwoFactorDecision,
   EnableTwoFactorDecisionType,
@@ -110,6 +110,10 @@ export class TwoFactorSetting extends Entity<TwoFactorSettingProps> {
     return this.props.updatedAt;
   }
 
+  isVerificationNeeded(): boolean {
+    return this.props.verifiedAt !== null && this.props.isEnabled;
+  }
+
   verify(method: TwoFactorMethod): void {
     if (this.props.verifiedAt)
       throw new TwoFactorSettingAlreadyVerifiedException();
@@ -185,5 +189,16 @@ export class TwoFactorSetting extends Entity<TwoFactorSettingProps> {
     this.props.secretCiphertext = secretCiphertext;
     this.props.secretMetadata = secretMetadata;
     this.props.updatedAt = new Date();
+  }
+
+  parseTwoFactorMethodToOtpChannel(): OtpChannel {
+    switch (this.props.method) {
+      case TwoFactorMethod.EMAIL_OTP:
+        return OtpChannel.EMAIL;
+      case TwoFactorMethod.SMS_OTP:
+        return OtpChannel.SMS;
+      default:
+        throw new Error(`Unknown two-factor method: ${this.props.method}`);
+    }
   }
 }

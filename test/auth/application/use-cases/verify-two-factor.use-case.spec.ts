@@ -49,7 +49,7 @@ describe('VerifyTwoFactorUseCase', () => {
       useCase.execute({
         userId: mockUserId,
         method: TwoFactorMethod.EMAIL_OTP,
-        code: '123456' as any,
+        otpCode: '123456' as any,
       }),
     ).rejects.toThrow(TwoFactorSettingNotFoundException);
   });
@@ -77,7 +77,7 @@ describe('VerifyTwoFactorUseCase', () => {
     await useCase.execute({
       userId: mockUserId,
       method: TwoFactorMethod.EMAIL_OTP,
-      code: '123456' as any,
+      otpCode: '123456' as any,
     });
 
     expect(otpRepo.findByUserIdAndCode).toHaveBeenCalledWith(
@@ -111,7 +111,7 @@ describe('VerifyTwoFactorUseCase', () => {
     await useCase.execute({
       userId: mockUserId,
       method: TwoFactorMethod.TOTP,
-      code: '000000' as any,
+      otpCode: '000000' as any,
     });
 
     expect(encryption.decrypt).toHaveBeenCalledWith(
@@ -145,7 +145,7 @@ describe('VerifyTwoFactorUseCase', () => {
       useCase.execute({
         userId: mockUserId,
         method: TwoFactorMethod.TOTP,
-        code: '111111' as any,
+        otpCode: '111111' as any,
       }),
     ).rejects.toThrow(InvalidTotpCodeException);
   });

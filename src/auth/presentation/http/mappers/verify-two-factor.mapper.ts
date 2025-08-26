@@ -7,7 +7,7 @@ export class VerifyTwoFactorMapper {
     return {
       userId: dto.userId as UserId,
       method: dto.method,
-      code: dto.code,
+      otpCode: dto.otpCode,
     };
   }
 }

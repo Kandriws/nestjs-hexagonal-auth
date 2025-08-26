@@ -34,7 +34,7 @@ export class VerifyTwoFactorUseCase implements VerifyTwoFactorPort {
     private readonly encryption: EncryptionPort,
   ) {}
   async execute(command: VerifyTwoFactorCommand): Promise<void> {
-    const { userId, method, code } = command;
+    const { userId, method, otpCode: code } = command;
 
     const twoFactorSetting =
       await this.twoFactorSettingRepository.findByUserId(userId);
@@ -55,7 +55,7 @@ export class VerifyTwoFactorUseCase implements VerifyTwoFactorPort {
         throw new OtpNotFoundException();
       }
 
-      otpRecord.markAsUsedFor(OtpPurpose.TWO_FACTOR_VERIFICATION);
+      await otpRecord.markAsUsedFor(OtpPurpose.TWO_FACTOR_VERIFICATION);
       await this.otpRepository.save(otpRecord);
       await this.validateAndStoreTwoFactorSetting(twoFactorSetting, method);
       return;

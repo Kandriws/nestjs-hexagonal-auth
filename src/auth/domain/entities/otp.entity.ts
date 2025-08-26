@@ -107,12 +107,19 @@ export class Otp extends Entity<OtpProps> {
     return this.usedAt !== null;
   }
 
-  markAsUsedFor(purpose: OtpPurpose): void {
-    if (this.isExpired()) throw new OtpExpiredException();
-    if (this.isUsed()) throw new OtpAlreadyUsedException();
+  async markAsUsedFor(
+    purpose: OtpPurpose,
+    callback?: () => Promise<string>,
+  ): Promise<void> {
+    const message: string = callback ? ' ' + (await callback()) : '';
+
+    if (this.isExpired())
+      throw new OtpExpiredException('OTP has expired.' + message);
+    if (this.isUsed())
+      throw new OtpAlreadyUsedException('OTP has already been used.' + message);
     if (this.purpose !== purpose) {
       throw new InvalidOtpPurposeException(
-        `Invalid OTP purpose: ${this.purpose}`,
+        `Invalid OTP purpose: ${this.purpose}.` + message,
       );
     }
 

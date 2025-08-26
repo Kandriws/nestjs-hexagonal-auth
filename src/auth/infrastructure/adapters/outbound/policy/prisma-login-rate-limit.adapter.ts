@@ -80,13 +80,10 @@ export class PrismaLoginRateLimitAdapter implements LoginRateLimitPort {
 
   async reset(userId: string): Promise<void> {
     try {
-      await this.prisma.loginRateLimit.delete({
+      await this.prisma.loginRateLimit.deleteMany({
         where: { userId },
       });
-    } catch (error) {
-      if (error?.code === 'P2025') {
-        return;
-      }
+    } catch {
       throw new PersistenceInfrastructureException(
         'An error occurred while resetting login rate limit',
       );
