@@ -1,4 +1,5 @@
 export * from './enable-two-factor.mapper';
+export * from './forgot-password.mapper';
 export * from './login-user.mapper';
 export * from './refresh-token.mapper';
 export * from './register-user.mapper';

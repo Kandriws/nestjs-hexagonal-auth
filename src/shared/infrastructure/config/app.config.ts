@@ -8,4 +8,5 @@ export default registerAs('app', () => ({
   isProduction: envs.app.isProduction,
   isDevelopment: envs.app.isDevelopment,
   isTest: envs.app.isTest,
+  resetPasswordFrontendUrl: envs.app.resetPasswordFrontendUrl,
 }));

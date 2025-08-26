@@ -6,6 +6,7 @@ import {
   RefreshTokenPort,
   EnableTwoFactorPort,
   VerifyTwoFactorPort,
+  ForgotPasswordPort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
@@ -28,7 +29,10 @@ import {
   OtpPolicyPort,
   OtpRateLimitPort,
 } from './domain/ports/outbound/policy';
-import { OtpNotificationPort } from './domain/ports/outbound/notification';
+import {
+  OtpNotificationPort,
+  ResetPasswordNotifierPort,
+} from './domain/ports/outbound/notification';
 
 import {
   PrismaOtpRepositoryAdapter,
@@ -50,10 +54,14 @@ import {
   PrismaLoginRateLimitAdapter,
   PrismaOtpRateLimitAdapter,
 } from './infrastructure/adapters/outbound/policy';
-import { OtpNotificationSenderAdapter } from './infrastructure/adapters/outbound/notification';
+import {
+  OtpNotificationSenderAdapter,
+  ResetPasswordNotifierAdapter,
+} from './infrastructure/adapters/outbound/notification';
 
 import {
   EnableTwoFactorUseCase,
+  ForgotPasswordUseCase,
   LoginUserUseCase,
   RefreshTokenUseCase,
   RegisterUserUseCase,
@@ -91,6 +99,10 @@ export const useCaseProviders = [
   {
     provide: VerifyTwoFactorPort,
     useClass: VerifyTwoFactorUseCase,
+  },
+  {
+    provide: ForgotPasswordPort,
+    useClass: ForgotPasswordUseCase,
   },
 ];
 
@@ -167,6 +179,10 @@ export const notificationProviders = [
   {
     provide: OtpNotificationPort,
     useClass: OtpNotificationSenderAdapter,
+  },
+  {
+    provide: ResetPasswordNotifierPort,
+    useClass: ResetPasswordNotifierAdapter,
   },
 ];
 

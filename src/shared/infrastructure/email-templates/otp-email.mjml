@@ -1,0 +1,10 @@
+{{#> base title="Your OTP Code" preview="Your one-time code"}}
+  {{#*inline "content"}}
+    {{#if name}}
+      <mj-text>Hi {{name}},</mj-text>
+    {{else}}
+      <mj-text>Hi,</mj-text>
+    {{/if}}
+    {{> otp-block }}
+  {{/inline}}
+{{/base}}

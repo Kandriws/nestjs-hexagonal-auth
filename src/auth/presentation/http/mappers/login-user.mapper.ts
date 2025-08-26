@@ -7,14 +7,14 @@ import { OtpCodeVo } from 'src/auth/domain/value-objects';
 export class LoginUserMapper {
   static toCommand(
     dto: LoginUserDto,
-    ReqContext: RequestContext,
+    reqContext: RequestContext,
   ): LoginUserCommand {
     return {
       email: EmailVo.of(dto.email),
       password: PasswordVo.of(dto.password),
       otpCode: dto.otpCode ? OtpCodeVo.of(dto.otpCode) : undefined,
-      ipAddress: ReqContext.ipAddress,
-      userAgent: ReqContext.userAgent,
+      ipAddress: reqContext.ipAddress,
+      userAgent: reqContext.userAgent,
     };
   }
 }
