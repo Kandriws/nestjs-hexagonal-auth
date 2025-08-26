@@ -311,7 +311,7 @@ describe('LoginUserUseCase', () => {
       otpCode: { getValue: () => '654321' } as any,
     });
 
-    expect(mockTotp.verify).toHaveBeenCalledWith('654321', 'secret');
+    expect(mockTotp.verify).toHaveBeenCalledWith('secret', '654321');
     expect(res).toEqual({
       accessToken: 'access-token-2',
       refreshToken: 'refresh-token-2',
