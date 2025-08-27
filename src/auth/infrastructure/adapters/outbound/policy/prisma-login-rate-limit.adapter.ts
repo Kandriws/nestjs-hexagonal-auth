@@ -32,8 +32,8 @@ export class PrismaLoginRateLimitAdapter implements LoginRateLimitPort {
    */
   async hit(userId: string): Promise<RateLimitInfo> {
     const now = DateTimeVO.now();
-
-    const record = await this.prisma.loginRateLimit.upsert({
+    // Ensure a record exists for the user
+    await this.prisma.loginRateLimit.upsert({
       where: { userId },
       update: {},
       create: {
@@ -44,32 +44,43 @@ export class PrismaLoginRateLimitAdapter implements LoginRateLimitPort {
       },
     });
 
+    // Use an atomic increment to avoid read-modify-write races.
+    // We increment attempts and fetch the updated record in a single DB operation.
+    const updated = await this.prisma.loginRateLimit.update({
+      where: { userId },
+      data: {
+        attempts: { increment: 1 },
+        // touch updatedAt if present in schema
+      },
+    });
+
     const currentWindow = new RateLimitWindow(
       this.thresholds,
       now,
-      record.attempts,
-      DateTimeVO.of(record.windowStart),
-      DateTimeVO.of(record.windowEnd),
+      updated.attempts,
+      DateTimeVO.of(updated.windowStart),
+      DateTimeVO.of(updated.windowEnd),
     );
 
-    currentWindow.registerAttemptAndBlockIfLimitReached();
-
-    if (record.attempts !== currentWindow.attempts) {
-      await this.prisma.loginRateLimit.update({
-        where: { userId },
-        data: {
-          attempts: currentWindow.attempts,
-          windowStart: currentWindow.windowStart.getValue(),
-          windowEnd: currentWindow.windowEnd.getValue(),
-        },
-      });
-    }
-
+    // If the window is active after increment, the user should be blocked.
     if (currentWindow.isWindowActive()) {
       throw new LoginRateLimitExceededException(
         `Login rate limit exceeded. Please try again in ${currentWindow.currentThreshold.lockMinutes} minutes.`,
       );
     }
+
+    // If threshold reached with this attempt, block the window
+    currentWindow.blockIfNeeded();
+
+    // Persist block state and attempts
+    await this.prisma.loginRateLimit.update({
+      where: { userId },
+      data: {
+        attempts: currentWindow.attempts,
+        windowStart: currentWindow.windowStart.getValue(),
+        windowEnd: currentWindow.windowEnd.getValue(),
+      },
+    });
 
     return {
       attempts: currentWindow.attempts,

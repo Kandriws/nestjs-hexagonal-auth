@@ -88,6 +88,19 @@ export class RateLimitWindow {
     this.checkAndBlockIfRateLimitReached();
   }
 
+  /**
+   * Check current attempts and block the window if the threshold is reached.
+   * This method does NOT modify attempts and is safe to call after an
+   * external, atomic increment has already been applied at the persistence
+   * layer. It exists to support concurrency-safe adapters which perform
+   * an atomic increment in the DB and then need domain logic to decide if
+   * the window should be blocked.
+   */
+  blockIfNeeded(): void {
+    if (this.isWindowActive()) return;
+    this.checkAndBlockIfRateLimitReached();
+  }
+
   // --- Private helpers --------------------------------------------------
   /** Increment the attempts counter by 1. */
   private incrementAttempts(): void {
