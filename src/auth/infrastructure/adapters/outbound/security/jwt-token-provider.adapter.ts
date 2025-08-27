@@ -13,7 +13,7 @@ import { secondsToMilliseconds } from 'src/shared/domain/utils/time.util';
 import { EmailVo } from 'src/shared/domain/value-objects';
 
 @Injectable()
-export class JwtProviderAdapter implements TokenProviderPort {
+export class JwtTokenProviderAdapter implements TokenProviderPort {
   constructor(
     private readonly jwtConfigMapper: JwtTokenConfigMapper,
     private readonly jwtService: JwtService,

@@ -15,6 +15,7 @@ export class TokenMapper {
       expiresAt: new Date(raw.expiresAt),
       createdAt: new Date(raw.createdAt),
       updatedAt: new Date(raw.updatedAt),
+      consumedAt: raw.consumedAt,
       metadata: {
         ipAddress: raw?.ipAddress,
         userAgent: raw?.userAgent,
@@ -23,16 +24,19 @@ export class TokenMapper {
   }
 
   static toPersistence(token: Token): PrismaToken {
-    return {
+    const out: any = {
       id: token.id,
       userId: token.userId,
       type: this.prismaTokenTypeMap[token.type],
       expiresAt: token.expiresAt,
       createdAt: token.createdAt,
       updatedAt: token.updatedAt,
+      consumedAt: token.consumedAt ?? null,
       ipAddress: token.metadata.ipAddress,
       userAgent: token.metadata.userAgent,
     };
+
+    return out as unknown as PrismaToken;
   }
 
   private static readonly prismaTokenTypeMap: Record<

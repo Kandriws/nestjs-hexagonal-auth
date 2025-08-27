@@ -6,6 +6,7 @@ export interface CreateTokenDto {
   userId: UserId;
   type: TokenType;
   expiresAt: Date;
+  consumedAt?: Date | null;
   metadata?: {
     ipAddress?: string;
     userAgent?: string;

@@ -2,7 +2,10 @@ import { UserId } from 'src/shared/domain/types';
 import { TokenType } from '../enums';
 import { CreateTokenDto } from '../dtos/create-token.dto';
 import { Entity } from 'src/shared/domain/entities';
-import { UserSessionExpirationException } from '../exceptions';
+import {
+  UserSessionExpirationException,
+  TokenAlreadyConsumedException,
+} from '../exceptions';
 
 interface TokenProperties {
   id: string;
@@ -15,6 +18,7 @@ interface TokenProperties {
     ipAddress?: string;
     userAgent?: string;
   }>;
+  consumedAt?: Date | null;
 }
 
 export class Token extends Entity<TokenProperties> {
@@ -31,6 +35,7 @@ export class Token extends Entity<TokenProperties> {
       ...props,
       createdAt: new Date(),
       updatedAt: new Date(),
+      consumedAt: null,
       metadata: props.metadata || {},
     });
   }
@@ -64,5 +69,20 @@ export class Token extends Entity<TokenProperties> {
     userAgent?: string;
   }> {
     return this.props.metadata;
+  }
+
+  get consumedAt(): Date | null | undefined {
+    return this.props.consumedAt;
+  }
+
+  isConsumed(): boolean {
+    return !!this.props.consumedAt;
+  }
+
+  consume(): void {
+    if (this.isConsumed()) {
+      throw new TokenAlreadyConsumedException();
+    }
+    this.props.consumedAt = new Date();
   }
 }

@@ -27,6 +27,7 @@ import {
   LoginUserPort,
   RefreshTokenPort,
   ResendRegistrationOtpPort,
+  ResetPasswordPort,
   VerifyTwoFactorPort,
   VerifyUserRegistrationPort,
 } from 'src/auth/domain/ports/inbound';
@@ -41,6 +42,8 @@ import { EnableTwoFactorResponse } from 'src/auth/domain/ports/outbound/commands
 import { Public } from 'src/auth/infrastructure/decorators/public.decorator';
 import { CurrentUser } from 'src/auth/infrastructure/decorators/current-user.decorator';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
+import { ResetPasswordMapper } from '../mappers/reset-password.mapper';
 
 @Controller('auth')
 export class AuthController {
@@ -61,6 +64,8 @@ export class AuthController {
     private readonly verifyTwoFactorPort: VerifyTwoFactorPort,
     @Inject(ForgotPasswordPort)
     private readonly forgotPasswordPort: ForgotPasswordPort,
+    @Inject(ResetPasswordPort)
+    private readonly resetPasswordPort: ResetPasswordPort,
   ) {}
 
   @Public()
@@ -176,6 +181,19 @@ export class AuthController {
     await this.forgotPasswordPort.execute(command);
     return ResponseFactory.ok<MessageResponseDto>({
       message: 'Password reset email sent successfully',
+    });
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+  ): Promise<ApiResponse<MessageResponseDto>> {
+    const command = ResetPasswordMapper.toCommand(dto);
+    await this.resetPasswordPort.execute(command);
+    return ResponseFactory.ok<MessageResponseDto>({
+      message: 'Password reset successfully',
     });
   }
 }

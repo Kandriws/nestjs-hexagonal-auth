@@ -71,6 +71,7 @@ model Token {
   type      TokenType
   ipAddress String?
   userAgent String?
+  consumedAt DateTime?
   expiresAt DateTime
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

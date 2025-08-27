@@ -51,8 +51,8 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
       await this.prismaService.token.delete({
         where: { id },
       });
-    } catch (error) {
-      if (error.code === 'P2025') {
+    } catch (error: any) {
+      if (error && error.code === 'P2025') {
         throw new TokenNotFoundException();
       }
 
@@ -78,16 +78,34 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
     try {
       const createData = TokenMapper.toPersistence(newToken);
       await this.prismaService.$transaction([
-        this.prismaService.token.delete({ where: { id: oldTokenId } }),
+        this.prismaService.token.updateMany({
+          where: { id: oldTokenId, consumedAt: null } as any,
+          data: { consumedAt: new Date() } as any,
+        }),
         this.prismaService.token.create({ data: createData }),
       ]);
-    } catch (error) {
+    } catch (error: any) {
       if (error && (error as any).code === 'P2025') {
         throw new TokenNotFoundException();
       }
 
       throw new PersistenceInfrastructureException(
         'Error rotating token in the persistence layer',
+      );
+    }
+  }
+
+  async markConsumedIfNotConsumed(id: string): Promise<boolean> {
+    try {
+      const result = await this.prismaService.token.updateMany({
+        where: { id, consumedAt: null },
+        data: { consumedAt: new Date() },
+      });
+
+      return result.count > 0;
+    } catch {
+      throw new PersistenceInfrastructureException(
+        `Error marking token as consumed: ${id}`,
       );
     }
   }

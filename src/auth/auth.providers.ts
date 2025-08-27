@@ -7,6 +7,7 @@ import {
   EnableTwoFactorPort,
   VerifyTwoFactorPort,
   ForgotPasswordPort,
+  ResetPasswordPort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
@@ -44,7 +45,7 @@ import {
   AesGcmEncryptionAdapter,
   BcryptHasherAdapter,
   CryptoUUIDAdapter,
-  JwtProviderAdapter,
+  JwtTokenProviderAdapter,
   OtpGeneratorAdapter,
   OtplibTotpAdapter,
   OtpSenderAdapter,
@@ -66,6 +67,7 @@ import {
   RefreshTokenUseCase,
   RegisterUserUseCase,
   ResendRegistrationOtpUseCase,
+  ResetPasswordUseCase,
   VerifyTwoFactorUseCase,
   VerifyUserRegistrationUseCase,
 } from './application/use-cases';
@@ -104,6 +106,10 @@ export const useCaseProviders = [
     provide: ForgotPasswordPort,
     useClass: ForgotPasswordUseCase,
   },
+  {
+    provide: ResetPasswordPort,
+    useClass: ResetPasswordUseCase,
+  },
 ];
 
 export const persistenceProviders = [
@@ -136,7 +142,7 @@ export const securityProviders = [
   },
   {
     provide: TokenProviderPort,
-    useClass: JwtProviderAdapter,
+    useClass: JwtTokenProviderAdapter,
   },
   {
     provide: OtpGeneratorPort,

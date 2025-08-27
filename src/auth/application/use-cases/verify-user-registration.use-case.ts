@@ -43,9 +43,9 @@ export class VerifyUserRegistrationUseCase
     }
 
     await otpRecord.markAsUsedFor(OtpPurpose.EMAIL_VERIFICATION);
-    const verifiedUser = user.markAsVerified();
+    user.markAsVerified();
 
     await this.otpRepository.save(otpRecord);
-    await this.userRepository.save(verifiedUser);
+    await this.userRepository.save(user);
   }
 }

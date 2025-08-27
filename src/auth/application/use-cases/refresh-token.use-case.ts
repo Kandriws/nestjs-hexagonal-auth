@@ -3,6 +3,7 @@ import { Token } from 'src/auth/domain/entities';
 import { TokenType } from 'src/auth/domain/enums';
 import {
   InvalidTokenPayloadException,
+  TokenAlreadyConsumedException,
   TokenNotFoundException,
 } from 'src/auth/domain/exceptions';
 import { RefreshTokenPort } from 'src/auth/domain/ports/inbound';
@@ -58,6 +59,10 @@ export class RefreshTokenUseCase implements RefreshTokenPort {
 
     if (!tokenRecord) {
       throw new TokenNotFoundException();
+    }
+
+    if (tokenRecord.isConsumed && tokenRecord.isConsumed()) {
+      throw new TokenAlreadyConsumedException();
     }
     const user = await this.userRepository.findById(tokenRecord.userId);
 
