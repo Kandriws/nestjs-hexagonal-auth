@@ -4,6 +4,10 @@ import { OtpExpiredException } from '../exceptions/otp-expired.exception';
 import { CreateOtpDto } from '../dtos/create-otp.dto';
 import { OtpChannel, OtpPurpose } from '../enums';
 import { Entity } from 'src/shared/domain/entities/entity';
+import {
+  InvalidOtpPurposeException,
+  OtpAlreadyUsedException,
+} from '../exceptions';
 
 interface OtpProps {
   id: string;
@@ -12,6 +16,7 @@ interface OtpProps {
   channel: OtpChannel;
   purpose: OtpPurpose;
   usedAt: Date | null;
+  revokedAt?: Date | null;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +48,7 @@ export class Otp extends Entity<OtpProps> {
       channel,
       purpose,
       usedAt: null,
+      revokedAt: null,
       expiresAt,
       createdAt,
       updatedAt: createdAt,
@@ -73,6 +79,10 @@ export class Otp extends Entity<OtpProps> {
     return this.props.usedAt;
   }
 
+  get revokedAt() {
+    return this.props.revokedAt;
+  }
+
   get createdAt() {
     return this.props.createdAt;
   }
@@ -89,14 +99,38 @@ export class Otp extends Entity<OtpProps> {
     return new Date() > this.expiresAt;
   }
 
+  isRevoked(): boolean {
+    return this.props.revokedAt !== null;
+  }
+
   isUsed(): boolean {
     return this.usedAt !== null;
   }
 
-  markAsUsed(): Otp {
+  async markAsUsedFor(
+    purpose: OtpPurpose,
+    callback?: () => Promise<string>,
+  ): Promise<void> {
+    const message: string = callback ? ' ' + (await callback()) : '';
+
+    if (this.isExpired())
+      throw new OtpExpiredException('OTP has expired.' + message);
+    if (this.isUsed())
+      throw new OtpAlreadyUsedException('OTP has already been used.' + message);
+    if (this.purpose !== purpose) {
+      throw new InvalidOtpPurposeException(
+        `Invalid OTP purpose: ${this.purpose}.` + message,
+      );
+    }
+
+    this.props.usedAt = new Date();
+    this.props.updatedAt = new Date();
+  }
+
+  markAsRevoked(): Otp {
     return new Otp({
       ...this.props,
-      usedAt: new Date(),
+      revokedAt: new Date(),
       updatedAt: new Date(),
     });
   }

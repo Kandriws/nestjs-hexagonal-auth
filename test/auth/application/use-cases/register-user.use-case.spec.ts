@@ -1,10 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RegisterUserUseCase } from '../../../../src/auth/application/use-cases/register-user.use-case';
-import { UserRepositoryPort } from '../../../../src/auth/domain/ports/outbound/persistence/user.repository.port';
-import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
-import { UserId } from 'src/shared/domain/types';
-import { RegisterUserCommand } from 'src/auth/domain/ports/inbound/commands/register-user.command';
+import { RegisterUserUseCase } from 'src/auth/application/use-cases';
 import { User } from 'src/auth/domain/entities';
+import { RegisterUserCommand } from 'src/auth/domain/ports/inbound';
+import { OtpNotificationPort } from 'src/auth/domain/ports/outbound/notification';
+import {
+  OtpRepositoryPort,
+  UserRepositoryPort,
+} from 'src/auth/domain/ports/outbound/persistence';
+import { OtpPolicyPort } from 'src/auth/domain/ports/outbound/policy';
+import {
+  HasherPort,
+  OtpGeneratorPort,
+  OtpSenderPort,
+  UUIDPort,
+} from 'src/auth/domain/ports/outbound/security';
+import { UserId } from 'src/shared/domain/types';
+import { EmailVo, NameVo, PasswordVo } from 'src/shared/domain/value-objects';
 
 describe('RegisterUserUseCase', () => {
   let useCase: RegisterUserUseCase;
@@ -37,6 +48,42 @@ describe('RegisterUserUseCase', () => {
             generate: jest.fn(),
           },
         },
+        {
+          provide: HasherPort,
+          useValue: {
+            hash: jest.fn().mockResolvedValue('hashedPassword123!'),
+          },
+        },
+        {
+          provide: OtpGeneratorPort,
+          useValue: {
+            generate: jest.fn().mockResolvedValue('123456'),
+          },
+        },
+        {
+          provide: OtpRepositoryPort,
+          useValue: {
+            save: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: OtpPolicyPort,
+          useValue: {
+            ttlMinutes: jest.fn().mockReturnValue(10),
+          },
+        },
+        {
+          provide: OtpNotificationPort,
+          useValue: {
+            send: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: OtpSenderPort,
+          useValue: {
+            sendOtp: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -47,10 +94,10 @@ describe('RegisterUserUseCase', () => {
 
   describe('execute', () => {
     const validCommand: RegisterUserCommand = {
-      email: 'test@example.com',
-      password: 'SecurePass123!',
-      firstName: 'John',
-      lastName: 'Doe',
+      email: EmailVo.of('test@example.com'),
+      password: PasswordVo.of('SecurePass123!'),
+      firstName: NameVo.of('John'),
+      lastName: NameVo.of('Doe'),
     };
 
     it('should register a new user successfully when email does not exist', async () => {
@@ -64,20 +111,27 @@ describe('RegisterUserUseCase', () => {
 
       // Assert
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        validCommand.email,
+        validCommand.email.getValue(),
       );
       expect(uuidService.generate).toHaveBeenCalled();
       // Comprobar que se guarda una instancia de User y que el snapshot es correcto
+      // Assert
       expect(userRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           snap: expect.objectContaining({
             id: mockUserId,
-            email: expect.objectContaining({ value: validCommand.email }),
-            password: expect.objectContaining({ value: validCommand.password }),
-            firstName: expect.objectContaining({
-              value: validCommand.firstName,
+            email: expect.objectContaining({
+              value: validCommand.email.getValue(),
             }),
-            lastName: expect.objectContaining({ value: validCommand.lastName }),
+            password: expect.objectContaining({
+              value: 'hashedPassword123!',
+            }),
+            firstName: expect.objectContaining({
+              value: validCommand.firstName.getValue(),
+            }),
+            lastName: expect.objectContaining({
+              value: validCommand.lastName.getValue(),
+            }),
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
           }),
@@ -96,7 +150,7 @@ describe('RegisterUserUseCase', () => {
       );
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        validCommand.email,
+        validCommand.email.getValue(),
       );
       expect(uuidService.generate).not.toHaveBeenCalled();
       expect(userRepository.save).not.toHaveBeenCalled();
@@ -107,7 +161,6 @@ describe('RegisterUserUseCase', () => {
       const repositoryError = new Error('Database connection failed');
       userRepository.findByEmail.mockRejectedValue(repositoryError);
 
-      // Act & Assert
       await expect(useCase.execute(validCommand)).rejects.toThrow(
         repositoryError,
       );
@@ -138,12 +191,18 @@ describe('RegisterUserUseCase', () => {
         expect.objectContaining({
           snap: expect.objectContaining({
             id: mockUserId,
-            email: expect.objectContaining({ value: validCommand.email }),
-            password: expect.objectContaining({ value: validCommand.password }),
-            firstName: expect.objectContaining({
-              value: validCommand.firstName,
+            email: expect.objectContaining({
+              value: validCommand.email.getValue(),
             }),
-            lastName: expect.objectContaining({ value: validCommand.lastName }),
+            password: expect.objectContaining({
+              value: 'hashedPassword123!',
+            }),
+            firstName: expect.objectContaining({
+              value: validCommand.firstName.getValue(),
+            }),
+            lastName: expect.objectContaining({
+              value: validCommand.lastName.getValue(),
+            }),
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
           }),

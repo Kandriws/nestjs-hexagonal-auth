@@ -37,7 +37,6 @@ export class NodeMailerAdapter implements MailerPort {
   }
 
   private toAddressString(list: MailerEmailVo[]): string {
-    console.log('Converting email list to string:', list);
     return list.map((emailVo) => emailVo.getValue()).join(', ');
   }
 }

@@ -38,11 +38,13 @@ if (process.env.DOCKER_ENV === 'true') {
 interface EnvConfig {
   app: {
     env: string;
+    name: string;
     host: string;
     port: number;
     isProduction: boolean;
     isDevelopment: boolean;
     isTest: boolean;
+    resetPasswordFrontendUrl: string;
   };
   mail: {
     host: string;
@@ -56,13 +58,37 @@ interface EnvConfig {
     fromName: string;
   };
   security: {
+    rateLimitProfile: string;
     saltRounds: number;
+    encryption: {
+      keysFilePath: string;
+    };
     otp: {
-      email: {
-        ttl: number;
+      channel: {
+        email: {
+          ttl: number;
+        };
+        sms: {
+          ttl: number;
+        };
       };
-      sms: {
-        ttl: number;
+      rateLimit: {
+        maxAttempts: number;
+        windowMinutes: number;
+      };
+    };
+    jwt: {
+      access: {
+        secret: string;
+        expiresIn: string;
+      };
+      refresh: {
+        secret: string;
+        expiresIn: string;
+      };
+      reset: {
+        secret: string;
+        expiresIn: string;
       };
     };
   };
@@ -90,8 +116,10 @@ const envVarsSchema = joi
       .string()
       .valid('development', 'production', 'test')
       .required(),
+    NAME: joi.string().default('AuthHexArchBackend'),
     HOST: joi.string().default('localhost'),
     PORT: joi.number().default(3000),
+    RESET_PASSWORD_FRONTEND_URL: joi.string().uri().required(),
 
     // Mailer
     MAIL_HOST: joi.string().required(),
@@ -103,6 +131,11 @@ const envVarsSchema = joi
     MAIL_FROM_NAME: joi.string().default('No Reply'),
 
     // Security
+    RATE_LIMIT_PROFILE: joi
+      .string()
+      .valid('standard', 'aggressive')
+      .default('standard')
+      .description('Rate limit profile to use'),
     SALT_ROUNDS: joi.number().default(10).description('Bcrypt salt rounds'),
     OTP_TTL_EMAIL: joi
       .number()
@@ -112,6 +145,25 @@ const envVarsSchema = joi
       .number()
       .default(5)
       .description('OTP TTL for SMS in minutes'),
+
+    OTP_RATE_LIMIT_MAX_ATTEMPTS: joi
+      .number()
+      .default(3)
+      .description('Maximum OTP attempts before rate limiting'),
+    OTP_RATE_LIMIT_WINDOW_MINUTES: joi
+      .number()
+      .default(15)
+      .description('Time window for OTP rate limiting in minutes'),
+
+    ENCRYPTION_KEYS_FILE_PATH: joi.string().required(),
+
+    // JWT
+    JWT_ACCESS_SECRET: joi.string().required(),
+    JWT_ACCESS_EXPIRATION: joi.string().default('15m'),
+    JWT_REFRESH_SECRET: joi.string().required(),
+    JWT_REFRESH_EXPIRATION: joi.string().default('30d'),
+    JWT_RESET_SECRET: joi.string().required(),
+    JWT_RESET_EXPIRATION: joi.string().default('1h'),
 
     // Database - Postgresql
     DATABASE_URL: joi.string().description('Full PostgreSQL connection URL'),
@@ -151,11 +203,13 @@ if (!value.DATABASE_URL) {
 export const envs: EnvConfig = {
   app: {
     env: value.NODE_ENV,
+    name: value.NAME,
     host: value.HOST,
     port: value.PORT,
     isProduction: value.NODE_ENV === 'production',
     isDevelopment: value.NODE_ENV === 'development',
     isTest: value.NODE_ENV === 'test',
+    resetPasswordFrontendUrl: value.RESET_PASSWORD_FRONTEND_URL,
   },
   mail: {
     host: value.MAIL_HOST,
@@ -169,13 +223,37 @@ export const envs: EnvConfig = {
     fromName: value.MAIL_FROM_NAME,
   },
   security: {
+    rateLimitProfile: value.RATE_LIMIT_PROFILE,
     saltRounds: value.SALT_ROUNDS,
+    encryption: {
+      keysFilePath: value.ENCRYPTION_KEYS_FILE_PATH,
+    },
     otp: {
-      email: {
-        ttl: value.OTP_TTL_EMAIL,
+      channel: {
+        email: {
+          ttl: value.OTP_TTL_EMAIL,
+        },
+        sms: {
+          ttl: value.OTP_TTL_SMS,
+        },
       },
-      sms: {
-        ttl: value.OTP_TTL_SMS,
+      rateLimit: {
+        maxAttempts: value.OTP_RATE_LIMIT_MAX_ATTEMPTS,
+        windowMinutes: value.OTP_RATE_LIMIT_WINDOW_MINUTES,
+      },
+    },
+    jwt: {
+      access: {
+        secret: value.JWT_ACCESS_SECRET,
+        expiresIn: value.JWT_ACCESS_EXPIRATION,
+      },
+      refresh: {
+        secret: value.JWT_REFRESH_SECRET,
+        expiresIn: value.JWT_REFRESH_EXPIRATION,
+      },
+      reset: {
+        secret: value.JWT_RESET_SECRET,
+        expiresIn: value.JWT_RESET_EXPIRATION,
       },
     },
   },

@@ -20,7 +20,7 @@ export const createMockUser = (
   const defaultUser = {
     id: '123e4567-e89b-12d3-a456-426614174000' as UserId,
     email: 'test@example.com',
-    password: 'hashedPassword123',
+    password: 'HashedPassword123!',
     firstName: 'John',
     lastName: 'Doe',
   };
@@ -65,4 +65,20 @@ export const createMockRepository = <T extends object>(): jest.Mocked<T> => {
   });
 
   return mock;
+};
+
+/**
+ * Create a typed jest mock for any interface T.
+ * Usage: const repo = createMock<MyRepoPort>();
+ */
+export const createMock = <T extends object>(): jest.Mocked<T> => {
+  const target: Record<PropertyKey, any> = {};
+  return new Proxy(target, {
+    get: (_t, prop: PropertyKey) => {
+      if (!(prop in target)) {
+        target[prop] = jest.fn();
+      }
+      return target[prop];
+    },
+  }) as unknown as jest.Mocked<T>;
 };

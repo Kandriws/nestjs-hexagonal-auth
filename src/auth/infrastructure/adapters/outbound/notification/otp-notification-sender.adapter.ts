@@ -6,26 +6,32 @@ import {
 } from 'src/auth/domain/ports/outbound/notification';
 import { MailerPort } from 'src/shared/domain/ports/outbound/notification/mailer.port';
 import { MailerEmailVo } from 'src/shared/domain/value-objects';
+import { EmailTemplateRendererPort } from 'src/shared/domain/ports/outbound/notification/email-template-renderer.port';
 
 @Injectable()
 export class OtpNotificationSenderAdapter implements OtpNotificationPort {
   constructor(
     @Inject(MailerPort)
     private readonly mailer: MailerPort,
+    @Inject(EmailTemplateRendererPort)
+    private readonly templateRenderer: EmailTemplateRendererPort,
   ) {}
 
   async send(
     channel: OtpChannel,
-    to: MailerEmailVo[],
+    to: string[],
     ctx: OtpNotificationContext,
   ): Promise<void> {
     switch (channel) {
       case OtpChannel.EMAIL:
-        // TODO: Implement template rendering logic
         const subject = 'Your OTP Code';
-        const body = this.generateOtpTemplate(ctx.code.getValue(), ctx.ttl);
+        const body = await this.templateRenderer.render('otp-email', {
+          code: ctx.code.getValue(),
+          ttl: ctx.ttl,
+        });
+        const emails = to.map((email) => MailerEmailVo.of(email));
         return this.mailer.send({
-          to,
+          to: emails,
           subject,
           body,
         });
@@ -34,14 +40,5 @@ export class OtpNotificationSenderAdapter implements OtpNotificationPort {
       default:
         throw new Error(`Unsupported channel: ${channel}`);
     }
-  }
-
-  private generateOtpTemplate(otpCode: string, ttl: number): string {
-    return `
-      <h1>Your OTP Code</h1>
-      <p>Please use the following code to complete your registration:</p>
-      <h2>${otpCode}</h2>
-      <p>This code is valid for ${ttl} minutes.</p>
-    `;
   }
 }

@@ -60,12 +60,18 @@ export class User {
     return this.snap.updatedAt;
   }
 
-  markAsVerified(): User {
-    return new User({
-      ...this.snap,
-      verifiedAt: new Date(),
-      updatedAt: new Date(),
-    });
+  isVerified(): boolean {
+    return this.snap.verifiedAt !== null;
+  }
+
+  markAsVerified(): void {
+    this.snap.verifiedAt = new Date();
+    this.snap.updatedAt = new Date();
+  }
+
+  updatePassword(newPassword: string): void {
+    this.snap.password = PasswordVo.of(newPassword);
+    this.snap.updatedAt = new Date();
   }
 
   equals(other: User): boolean {

@@ -2,13 +2,23 @@ import { registerAs } from '@nestjs/config';
 import { envs } from './env.config';
 
 export default registerAs('security', () => ({
+  rateLimitProfile: envs.security.rateLimitProfile,
   saltRounds: envs.security.saltRounds,
+  encryption: {
+    keysFilePath: envs.security.encryption.keysFilePath,
+  },
   otp: {
-    email: {
-      ttl: envs.security.otp.email.ttl,
+    channel: {
+      email: {
+        ttl: envs.security.otp.channel.email.ttl,
+      },
+      sms: {
+        ttl: envs.security.otp.channel.sms.ttl,
+      },
     },
-    sms: {
-      ttl: envs.security.otp.sms.ttl,
+    rateLimit: {
+      maxAttempts: envs.security.otp.rateLimit.maxAttempts,
+      windowMinutes: envs.security.otp.rateLimit.windowMinutes,
     },
   },
 }));

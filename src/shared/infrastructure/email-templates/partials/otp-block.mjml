@@ -1,0 +1,3 @@
+<mj-text>Please use the following code to complete your action:</mj-text>
+<mj-text font-size="24px" font-weight="bold" align="center">{{code}}</mj-text>
+<mj-text>This code is valid for {{ttl}} minutes.</mj-text>
