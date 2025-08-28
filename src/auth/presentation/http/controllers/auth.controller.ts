@@ -1,5 +1,18 @@
 import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
 import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiExtraModels,
+  getSchemaPath,
+} from '@nestjs/swagger';
+import {
+  SwaggerMessageResponseDto,
+  SwaggerAuthTokensResponseDto,
+  SwaggerEnableTwoFactorResponseDto,
+} from 'src/shared/infrastructure/dto/swagger-api-response.dto';
+import { SwaggerErrorResponseDto } from 'src/shared/infrastructure/dto/swagger-error-response.dto';
+import {
   RegisterUserDto,
   MessageResponseDto,
   VerifyUserRegistrationDto,
@@ -45,6 +58,13 @@ import { TokenPayloadVo } from 'src/auth/domain/value-objects';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { ResetPasswordMapper } from '../mappers/reset-password.mapper';
 
+@ApiTags('Auth')
+@ApiExtraModels(
+  SwaggerMessageResponseDto,
+  SwaggerAuthTokensResponseDto,
+  SwaggerEnableTwoFactorResponseDto,
+  SwaggerErrorResponseDto,
+)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -71,6 +91,13 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user', operationId: 'registerUser' })
+  @SwaggerResponse({
+    status: HttpStatus.CREATED,
+    description: 'User registered successfully',
+    schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
+  })
+  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async register(
     @Body() dto: RegisterUserDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
@@ -84,6 +111,13 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login a user', operationId: 'loginUser' })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'User logged in successfully',
+    schema: { $ref: getSchemaPath(SwaggerAuthTokensResponseDto) },
+  })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async login(
     @Body() dto: LoginUserDto,
     @RequestMetadata() requestContext: RequestContext,
@@ -100,6 +134,16 @@ export class AuthController {
   @Public()
   @Post('verify-registration')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Verify a user's registration using OTP",
+    operationId: 'verifyRegistration',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'User registration verified successfully',
+    schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
+  })
+  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async verifyRegistration(
     @Body() dto: VerifyUserRegistrationDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
@@ -113,6 +157,16 @@ export class AuthController {
   @Public()
   @Post('resend-registration-otp')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Resend registration OTP to email',
+    operationId: 'resendRegistrationOtp',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'Registration OTP resent successfully',
+    schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
+  })
+  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async resendRegistrationOtp(
     @Body() dto: ResendRegistrationOtpDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
@@ -125,6 +179,16 @@ export class AuthController {
 
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Refresh authentication tokens',
+    operationId: 'refreshToken',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'Token refreshed successfully',
+    schema: { $ref: getSchemaPath(SwaggerAuthTokensResponseDto) },
+  })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async refreshToken(
     @Body() dto: RefreshTokenDto,
     @RequestMetadata() requestContext: RequestContext,
@@ -139,6 +203,16 @@ export class AuthController {
 
   @Post('enable-two-factor')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Enable two-factor authentication for current user',
+    operationId: 'enableTwoFactor',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'Two-factor authentication setup successfully',
+    schema: { $ref: getSchemaPath(SwaggerEnableTwoFactorResponseDto) },
+  })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async enableTwoFactor(
     @Body() dto: EnableTwoFactorDto,
     @CurrentUser() currentUser: TokenPayloadVo,
@@ -158,6 +232,16 @@ export class AuthController {
 
   @Post('verify-two-factor')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Verify two-factor authentication code',
+    operationId: 'verifyTwoFactor',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'Two-factor authentication verified successfully',
+    schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
+  })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async verifyTwoFactor(
     @Body() dto: VerifyTwoFactorDto,
     @CurrentUser() currentUser: TokenPayloadVo,
@@ -173,6 +257,16 @@ export class AuthController {
   @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Request password reset email',
+    operationId: 'forgotPassword',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset email sent successfully',
+    schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
+  })
+  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async forgotPassword(
     @Body() dto: ForgotPasswordDto,
     @RequestMetadata() requestContext: RequestContext,
@@ -187,6 +281,16 @@ export class AuthController {
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reset user password using token',
+    operationId: 'resetPassword',
+  })
+  @SwaggerResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset successfully',
+    schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
+  })
+  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
   async resetPassword(
     @Body() dto: ResetPasswordDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
