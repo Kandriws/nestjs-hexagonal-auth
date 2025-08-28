@@ -97,7 +97,11 @@ export class AuthController {
     description: 'User registered successfully',
     schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
   })
-  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Bad Request',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async register(
     @Body() dto: RegisterUserDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
@@ -117,7 +121,11 @@ export class AuthController {
     description: 'User logged in successfully',
     schema: { $ref: getSchemaPath(SwaggerAuthTokensResponseDto) },
   })
-  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 401,
+    description: 'Unauthorized',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async login(
     @Body() dto: LoginUserDto,
     @RequestMetadata() requestContext: RequestContext,
@@ -143,7 +151,11 @@ export class AuthController {
     description: 'User registration verified successfully',
     schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
   })
-  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Bad Request',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async verifyRegistration(
     @Body() dto: VerifyUserRegistrationDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
@@ -166,7 +178,11 @@ export class AuthController {
     description: 'Registration OTP resent successfully',
     schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
   })
-  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Bad Request',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async resendRegistrationOtp(
     @Body() dto: ResendRegistrationOtpDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
@@ -188,7 +204,11 @@ export class AuthController {
     description: 'Token refreshed successfully',
     schema: { $ref: getSchemaPath(SwaggerAuthTokensResponseDto) },
   })
-  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 401,
+    description: 'Unauthorized',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async refreshToken(
     @Body() dto: RefreshTokenDto,
     @RequestMetadata() requestContext: RequestContext,
@@ -212,7 +232,11 @@ export class AuthController {
     description: 'Two-factor authentication setup successfully',
     schema: { $ref: getSchemaPath(SwaggerEnableTwoFactorResponseDto) },
   })
-  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 401,
+    description: 'Unauthorized',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async enableTwoFactor(
     @Body() dto: EnableTwoFactorDto,
     @CurrentUser() currentUser: TokenPayloadVo,
@@ -241,7 +265,11 @@ export class AuthController {
     description: 'Two-factor authentication verified successfully',
     schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
   })
-  @SwaggerResponse({ status: 401, description: 'Unauthorized', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 401,
+    description: 'Unauthorized',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async verifyTwoFactor(
     @Body() dto: VerifyTwoFactorDto,
     @CurrentUser() currentUser: TokenPayloadVo,
@@ -266,7 +294,11 @@ export class AuthController {
     description: 'Password reset email sent successfully',
     schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
   })
-  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Bad Request',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async forgotPassword(
     @Body() dto: ForgotPasswordDto,
     @RequestMetadata() requestContext: RequestContext,
@@ -290,7 +322,11 @@ export class AuthController {
     description: 'Password reset successfully',
     schema: { $ref: getSchemaPath(SwaggerMessageResponseDto) },
   })
-  @SwaggerResponse({ status: 400, description: 'Bad Request', schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) } })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Bad Request',
+    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
+  })
   async resetPassword(
     @Body() dto: ResetPasswordDto,
   ): Promise<ApiResponse<MessageResponseDto>> {
