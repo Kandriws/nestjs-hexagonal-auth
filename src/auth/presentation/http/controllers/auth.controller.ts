@@ -4,6 +4,7 @@ import {
   ApiOperation,
   ApiResponse as SwaggerResponse,
   ApiExtraModels,
+  ApiBearerAuth,
   getSchemaPath,
 } from '@nestjs/swagger';
 import {
@@ -194,6 +195,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Refresh authentication tokens',
@@ -222,6 +224,7 @@ export class AuthController {
   }
 
   @Post('enable-two-factor')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Enable two-factor authentication for current user',
@@ -255,6 +258,7 @@ export class AuthController {
   }
 
   @Post('verify-two-factor')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Verify two-factor authentication code',

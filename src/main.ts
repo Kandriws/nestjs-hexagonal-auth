@@ -2,12 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomValidationPipe } from './shared/infrastructure/pipes/validation.pipe';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(CustomValidationPipe);
   app.enableCors();
+  app.use(morgan('dev'));
 
   const config = new DocumentBuilder()
     .setTitle('Auth API')
