@@ -1,3 +1,4 @@
+export * from './create-role.mapper';
 export * from './enable-two-factor.mapper';
 export * from './forgot-password.mapper';
 export * from './login-user.mapper';

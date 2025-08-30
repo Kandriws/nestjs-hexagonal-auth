@@ -13,10 +13,17 @@ import { allAuthProviders } from './auth.providers';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import appConfig from 'src/shared/infrastructure/config/app.config';
+import { RoleController } from './presentation/http/controllers/role.controller';
+import { roleProviders } from './role.providers';
 
 @Module({
-  controllers: [AuthController],
-  providers: [JwtTokenConfigMapper, JwtStrategy, ...allAuthProviders],
+  controllers: [AuthController, RoleController],
+  providers: [
+    JwtTokenConfigMapper,
+    JwtStrategy,
+    ...allAuthProviders,
+    ...roleProviders,
+  ],
   imports: [
     PrismaModule,
     SharedModule,

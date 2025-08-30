@@ -1,3 +1,4 @@
+export * from './create-role.dto';
 export * from './forgot-password.dto';
 export * from './login-user.dto';
 export * from './message-response.dto';

@@ -1,16 +1,16 @@
 import { ApiResponse } from './api-response.dto';
 
 interface Payload<T> {
-  data?: T;
   message: string;
+  data?: T;
 }
 export class ResponseFactory {
   static ok<T>(payload: Payload<T>): ApiResponse<T> {
     const { data, message } = payload;
     return {
       success: true,
-      data,
       message,
+      data,
       timestamp: new Date().toISOString(),
     };
   }
@@ -19,8 +19,8 @@ export class ResponseFactory {
     const { data, message } = payload;
     return {
       success: true,
-      data,
       message,
+      data,
       timestamp: new Date().toISOString(),
     };
   }
