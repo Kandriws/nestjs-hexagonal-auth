@@ -1,9 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Role } from 'src/auth/domain/entities/role.entity';
-import {
-  RoleCommand,
-  CreateRolePort,
-} from 'src/auth/domain/ports/inbound';
+import { RoleCommand, CreateRolePort } from 'src/auth/domain/ports/inbound';
 import { RoleRepositoryPort } from 'src/auth/domain/ports/outbound/persistence';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security';
 
