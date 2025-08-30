@@ -9,6 +9,7 @@ export * from './commands/verify-user-registration.command';
 export * from './create-role.port';
 export * from './delete-role.port';
 export * from './find-roles.port';
+export * from './find-role-by-id.port';
 export * from './enable-two-factor.port';
 export * from './forgot-password.port';
 export * from './login-user.port';

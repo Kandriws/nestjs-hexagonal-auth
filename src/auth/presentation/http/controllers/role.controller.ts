@@ -14,6 +14,7 @@ import {
   CreateRolePort,
   DeleteRolePort,
   FindRolesPort,
+  FindRoleByIdPort,
   UpdateRolePort,
 } from 'src/auth/domain/ports/inbound';
 import {
@@ -21,6 +22,7 @@ import {
   ResponseFactory,
   SwaggerErrorResponseDto,
   SwaggerRoleResponseDto,
+  SwaggerRolesResponseDto,
 } from 'src/shared/infrastructure/dto';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
@@ -42,7 +44,11 @@ import { CreateRoleDto, RoleResponseDto, UpdateRoleDto } from '../dtos';
 import { CreateRoleMapper, UpdateRoleMapper } from '../mappers';
 
 @ApiTags('Roles')
-@ApiExtraModels(SwaggerRoleResponseDto, SwaggerErrorResponseDto)
+@ApiExtraModels(
+  SwaggerRoleResponseDto,
+  SwaggerRolesResponseDto,
+  SwaggerErrorResponseDto,
+)
 @ApiBearerAuth()
 @Controller('roles')
 export class RoleController {
@@ -55,6 +61,8 @@ export class RoleController {
     private readonly deleteRolePort: DeleteRolePort,
     @Inject(FindRolesPort)
     private readonly findRolesPort: FindRolesPort,
+    @Inject(FindRoleByIdPort)
+    private readonly findRoleByIdPort: FindRoleByIdPort,
   ) {}
 
   @Post()
@@ -110,14 +118,31 @@ export class RoleController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all roles', operationId: 'getRoles' })
-  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiOperation({ summary: 'Get all roles', operationId: 'findAllRoles' })
+  @ApiOkDto(SwaggerRolesResponseDto)
   @ApiUnauthorized()
-  async getRoles(): Promise<ApiResponse<RoleResponseDto[]>> {
+  async findAll(): Promise<ApiResponse<RoleResponseDto[]>> {
     const roles = await this.findRolesPort.execute();
     return ResponseFactory.ok<RoleResponseDto[]>({
       data: roles.map(CreateRoleMapper.toResponse),
       message: 'Roles retrieved successfully',
+    });
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get a role by id', operationId: 'findRoleById' })
+  @ApiUuidParam('id', 'Role id')
+  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiNotFound()
+  @ApiUnauthorized()
+  async findRoleById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ApiResponse<RoleResponseDto>> {
+    const role = await this.findRoleByIdPort.execute(id);
+    return ResponseFactory.ok<RoleResponseDto>({
+      data: CreateRoleMapper.toResponse(role),
+      message: 'Role retrieved successfully',
     });
   }
 }
