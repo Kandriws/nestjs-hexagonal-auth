@@ -1,8 +1,9 @@
-export * from './commands/create-role.command';
 export * from './commands/forgot-password.command';
 export * from './commands/login-user.command';
 export * from './commands/register-user.command';
 export * from './commands/reset-password.command';
+export * from './commands/role.command';
+export * from './commands/update-role.command';
 export * from './commands/verify-two-factor.command';
 export * from './commands/verify-user-registration.command';
 export * from './create-role.port';
@@ -13,5 +14,6 @@ export * from './refresh-token.port';
 export * from './register-user.port';
 export * from './resend-registration-otp.port';
 export * from './reset-password.port';
+export * from './update-role.port';
 export * from './verify-two-factor.port';
 export * from './verify-user-registration.port';

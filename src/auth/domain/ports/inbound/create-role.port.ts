@@ -1,7 +1,7 @@
 import { Role } from '../../entities/role.entity';
-import { CreateRoleCommand } from './commands/create-role.command';
+import { RoleCommand } from './commands/role.command';
 
 export const CreateRolePort = Symbol('CreateRolePort');
 export interface CreateRolePort {
-  execute(command: CreateRoleCommand): Promise<Role>;
+  execute(command: RoleCommand): Promise<Role>;
 }

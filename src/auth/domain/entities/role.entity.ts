@@ -21,6 +21,10 @@ export class Role extends Entity<RoleProperties> {
     return new Role(props);
   }
 
+  update(props: Partial<Omit<RoleProperties, 'id'>>): void {
+    Object.assign(this.props, props);
+  }
+
   get name(): string {
     return this.props.name.getValue();
   }

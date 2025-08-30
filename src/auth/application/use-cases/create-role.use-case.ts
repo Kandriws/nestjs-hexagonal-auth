@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Role } from 'src/auth/domain/entities/role.entity';
 import {
-  CreateRoleCommand,
+  RoleCommand,
   CreateRolePort,
 } from 'src/auth/domain/ports/inbound';
 import { RoleRepositoryPort } from 'src/auth/domain/ports/outbound/persistence';
@@ -16,7 +16,7 @@ export class CreateRoleUseCase implements CreateRolePort {
     private readonly roleRepository: RoleRepositoryPort,
   ) {}
 
-  async execute(command: CreateRoleCommand): Promise<Role> {
+  async execute(command: RoleCommand): Promise<Role> {
     const role = Role.create({
       id: this.uuidPort.generate(),
       name: command.name,
