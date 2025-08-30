@@ -15,14 +15,17 @@ import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import appConfig from 'src/shared/infrastructure/config/app.config';
 import { RoleController } from './presentation/http/controllers/role.controller';
 import { roleProviders } from './role.providers';
+import { PermissionController } from './presentation/http/controllers/permission.controller';
+import { permissionProviders } from './permission.providers';
 
 @Module({
-  controllers: [AuthController, RoleController],
+  controllers: [AuthController, RoleController, PermissionController],
   providers: [
     JwtTokenConfigMapper,
     JwtStrategy,
     ...allAuthProviders,
     ...roleProviders,
+    ...permissionProviders,
   ],
   imports: [
     PrismaModule,

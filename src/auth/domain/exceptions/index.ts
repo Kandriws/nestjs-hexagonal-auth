@@ -15,6 +15,7 @@ export * from './otp-rate-limit-exceeded.exception';
 export * from './persistence-infrastructure.exception';
 export * from './role-already-exists.exception';
 export * from './role-not-found.exception';
+export * from './permission-not-found.exception';
 export * from './token-already-consumed.exception';
 export * from './token-not-found.exception';
 export * from './two-factor-setting-already-enabled.exception';

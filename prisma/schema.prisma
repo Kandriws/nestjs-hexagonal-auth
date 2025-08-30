@@ -15,21 +15,23 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(uuid())
-  email             String             @unique
-  password          String
-  firstName         String
-  lastName          String
-  verifiedAt        DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  userRoles         UserRole[]         @relation("UserRolesOwner")
-  assignedRoles     UserRole[]         @relation("UserRolesAssigner")
-  Otp               Otp[]
-  OtpRateLimit      OtpRateLimit[]
-  UserSession       Token[]
-  LoginRateLimit    LoginRateLimit[]
-  TwoFactorSettings TwoFactorSetting[]
+  id                      String             @id @default(uuid())
+  email                   String             @unique
+  password                String
+  firstName               String
+  lastName                String
+  verifiedAt              DateTime?
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  Otp                     Otp[]
+  OtpRateLimit            OtpRateLimit[]
+  UserSession             Token[]
+  LoginRateLimit          LoginRateLimit[]
+  TwoFactorSetting        TwoFactorSetting[]
+  userRolesOwned          UserRole[]         @relation("UserRolesOwner")
+  userRolesAssigned       UserRole[]         @relation("UserRolesAssigner")
+  userPermissionsOwned    UserPermission[]   @relation("UserPermissionsOwner")
+  userPermissionsAssigned UserPermission[]   @relation("UserPermissionsAssigner")
 }
 
 enum OtpChannel {
@@ -137,15 +139,39 @@ model TwoFactorSetting {
 }
 
 model Role {
-  id          String     @id @default(uuid())
-  name        String
-  description String?
-  realm       String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  userRoles   UserRole[]
+  id             String           @id @default(uuid())
+  name           String
+  description    String?
+  realm          String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  userRoles      UserRole[]
+  RolePermission RolePermission[]
 
   @@unique([name, realm])
+}
+
+model Permission {
+  id             String           @id @default(uuid())
+  name           String
+  realm          String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  UserPermission UserPermission[]
+  RolePermission RolePermission[]
+
+  @@unique([name, realm])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
 }
 
 model UserRole {
@@ -160,4 +186,16 @@ model UserRole {
 
   @@unique([userId, roleId])
   @@index([roleId])
+}
+
+model UserPermission {
+  id           String     @id @default(uuid())
+  userId       String
+  permissionId String
+  assignedById String?
+  assignedBy   User?      @relation("UserPermissionsAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  user         User       @relation("UserPermissionsOwner", fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
 }

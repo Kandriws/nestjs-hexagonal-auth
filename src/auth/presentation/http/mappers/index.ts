@@ -7,5 +7,7 @@ export * from './register-user.mapper';
 export * from './resend-registration-otp.mapper';
 export * from './reset-password.mapper';
 export * from './update-role.mapper';
+export * from './create-permission.mapper';
+export * from './update-permission.mapper';
 export * from './verify-two-factor.mapper';
 export * from './verify-user-registration.mapper';
