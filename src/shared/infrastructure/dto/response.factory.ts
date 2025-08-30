@@ -25,7 +25,14 @@ export class ResponseFactory {
     };
   }
 
-  static error(message: string): ApiResponse<null> {
-    return { success: false, message, timestamp: new Date().toISOString() };
+  static error<T = null>(message: string, data?: T): ApiResponse<T | null> {
+    const payload: any = {
+      success: false,
+      message,
+      data: data ?? undefined,
+      timestamp: new Date().toISOString(),
+    };
+
+    return payload as ApiResponse<T | null>;
   }
 }

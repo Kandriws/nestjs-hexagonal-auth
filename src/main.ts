@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomValidationPipe } from './shared/infrastructure/pipes/validation.pipe';
+import { GlobalExceptionsFilter } from './shared/infrastructure/exceptions/global-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as morgan from 'morgan';
 
@@ -8,6 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(CustomValidationPipe);
+  app.useGlobalFilters(new GlobalExceptionsFilter());
   app.enableCors();
   app.use(morgan('dev'));
 
