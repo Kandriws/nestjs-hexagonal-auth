@@ -6,6 +6,7 @@ import { RoleMapper } from './mappers/prisma-role.mapper';
 import {
   PersistenceInfrastructureException,
   RoleAlreadyExistsException,
+  RoleNotFoundException,
 } from 'src/auth/domain/exceptions';
 
 @Injectable()
@@ -47,7 +48,11 @@ export class PrismaRoleRepositoryAdapter implements RoleRepositoryPort {
   async delete(id: string): Promise<void> {
     try {
       await this.prismaService.role.delete({ where: { id } });
-    } catch {
+    } catch (error: any) {
+      if (error && error.code === 'P2025') {
+        throw new RoleNotFoundException();
+      }
+
       throw new PersistenceInfrastructureException('Error deleting role');
     }
   }

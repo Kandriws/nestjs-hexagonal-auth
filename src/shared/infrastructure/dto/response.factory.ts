@@ -25,6 +25,15 @@ export class ResponseFactory {
     };
   }
 
+  static noContent(): ApiResponse<null> {
+    return {
+      success: true,
+      message: 'No Content',
+      data: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   static error<T = null>(message: string, data?: T): ApiResponse<T | null> {
     const payload: any = {
       success: false,

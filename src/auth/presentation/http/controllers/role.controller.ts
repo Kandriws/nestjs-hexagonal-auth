@@ -7,8 +7,9 @@ import {
   Patch,
   Param,
   ParseUUIDPipe,
+  Delete,
 } from '@nestjs/common';
-import { CreateRolePort } from 'src/auth/domain/ports/inbound';
+import { CreateRolePort, DeleteRolePort } from 'src/auth/domain/ports/inbound';
 import {
   ApiResponse,
   ResponseFactory,
@@ -24,11 +25,18 @@ import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
   ApiTags,
   ApiOperation,
-  ApiResponse as SwaggerResponse,
   ApiExtraModels,
   ApiBearerAuth,
-  getSchemaPath,
 } from '@nestjs/swagger';
+import {
+  ApiBadRequest,
+  ApiUnauthorized,
+  ApiNotFound,
+  ApiNoContent,
+  ApiOkDto,
+  ApiCreatedDto,
+  ApiUuidParam,
+} from 'src/shared/infrastructure/decorators';
 import { RoleResponseDto } from '../dtos/role-response.dto';
 
 @ApiTags('Roles')
@@ -41,26 +49,16 @@ export class RoleController {
     private readonly createRolePort: CreateRolePort,
     @Inject(UpdateRolePort)
     private readonly updateRolePort: UpdateRolePort,
+    @Inject(DeleteRolePort)
+    private readonly deleteRolePort: DeleteRolePort,
   ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new role', operationId: 'createRole' })
-  @SwaggerResponse({
-    status: HttpStatus.CREATED,
-    description: 'Role created successfully',
-    schema: { $ref: getSchemaPath(SwaggerRoleResponseDto) },
-  })
-  @SwaggerResponse({
-    status: 400,
-    description: 'Bad Request',
-    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
-  })
-  @SwaggerResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
-  })
+  @ApiCreatedDto(SwaggerRoleResponseDto)
+  @ApiBadRequest()
+  @ApiUnauthorized()
   async create(
     @Body() createRoleDto: CreateRoleDto,
   ): Promise<ApiResponse<RoleResponseDto>> {
@@ -75,26 +73,11 @@ export class RoleController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a role', operationId: 'updateRole' })
-  @SwaggerResponse({
-    status: HttpStatus.OK,
-    description: 'Role updated successfully',
-    schema: { $ref: getSchemaPath(SwaggerRoleResponseDto) },
-  })
-  @SwaggerResponse({
-    status: 404,
-    description: 'Role not found',
-    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
-  })
-  @SwaggerResponse({
-    status: 400,
-    description: 'Bad Request',
-    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
-  })
-  @SwaggerResponse({
-    status: 401,
-    description: 'Unauthorized',
-    schema: { $ref: getSchemaPath(SwaggerErrorResponseDto) },
-  })
+  @ApiUuidParam('id', 'Role id')
+  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiNotFound()
+  @ApiBadRequest()
+  @ApiUnauthorized()
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
@@ -105,5 +88,19 @@ export class RoleController {
       data: CreateRoleMapper.toResponse(role),
       message: 'Role has been updated successfully',
     });
+  }
+
+  @Delete(':id')
+  @ApiUuidParam('id', 'Role id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a role', operationId: 'deleteRole' })
+  @ApiNoContent()
+  @ApiNotFound()
+  @ApiUnauthorized()
+  async delete(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ApiResponse<void>> {
+    await this.deleteRolePort.execute(id);
+    return ResponseFactory.noContent();
   }
 }
