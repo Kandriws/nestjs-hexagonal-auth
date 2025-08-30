@@ -8,19 +8,20 @@ import {
   Param,
   ParseUUIDPipe,
   Delete,
+  Get,
 } from '@nestjs/common';
-import { CreateRolePort, DeleteRolePort } from 'src/auth/domain/ports/inbound';
+import {
+  CreateRolePort,
+  DeleteRolePort,
+  FindRolesPort,
+  UpdateRolePort,
+} from 'src/auth/domain/ports/inbound';
 import {
   ApiResponse,
   ResponseFactory,
   SwaggerErrorResponseDto,
   SwaggerRoleResponseDto,
 } from 'src/shared/infrastructure/dto';
-import { CreateRoleDto } from '../dtos/create-role.dto';
-import { CreateRoleMapper } from '../mappers/create-role.mapper';
-import { UpdateRoleDto } from '../dtos/update-role.dto';
-import { UpdateRoleMapper } from '../mappers/update-role.mapper';
-import { UpdateRolePort } from 'src/auth/domain/ports/inbound';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
   ApiTags,
@@ -37,7 +38,8 @@ import {
   ApiCreatedDto,
   ApiUuidParam,
 } from 'src/shared/infrastructure/decorators';
-import { RoleResponseDto } from '../dtos/role-response.dto';
+import { CreateRoleDto, RoleResponseDto, UpdateRoleDto } from '../dtos';
+import { CreateRoleMapper, UpdateRoleMapper } from '../mappers';
 
 @ApiTags('Roles')
 @ApiExtraModels(SwaggerRoleResponseDto, SwaggerErrorResponseDto)
@@ -51,6 +53,8 @@ export class RoleController {
     private readonly updateRolePort: UpdateRolePort,
     @Inject(DeleteRolePort)
     private readonly deleteRolePort: DeleteRolePort,
+    @Inject(FindRolesPort)
+    private readonly findRolesPort: FindRolesPort,
   ) {}
 
   @Post()
@@ -102,5 +106,18 @@ export class RoleController {
   ): Promise<ApiResponse<void>> {
     await this.deleteRolePort.execute(id);
     return ResponseFactory.noContent();
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all roles', operationId: 'getRoles' })
+  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiUnauthorized()
+  async getRoles(): Promise<ApiResponse<RoleResponseDto[]>> {
+    const roles = await this.findRolesPort.execute();
+    return ResponseFactory.ok<RoleResponseDto[]>({
+      data: roles.map(CreateRoleMapper.toResponse),
+      message: 'Roles retrieved successfully',
+    });
   }
 }

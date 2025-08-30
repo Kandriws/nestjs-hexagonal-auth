@@ -1,5 +1,6 @@
 export * from './create-role.use-case';
 export * from './delete-role.use-case';
+export * from './find-roles.use-case';
 export * from './enable-two-factor.use-case';
 export * from './forgot-password.use-case';
 export * from './login-user.use-case';
