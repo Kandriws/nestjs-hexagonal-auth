@@ -19,9 +19,7 @@ export class AssignRolesToUserUseCase implements AssignUserRolesPort {
   ) {}
 
   async execute(command: AssignUserRolesCommand): Promise<void> {
-    const user = await this.userRepository.findById(
-      command.userId as unknown as UserId,
-    );
+    const user = await this.userRepository.findById(command.userId as UserId);
     if (!user) throw new UserNotFoundException();
 
     for (const roleId of command.roleIds) {

@@ -1,3 +1,6 @@
+export * from './assign-role-permissions.mapper';
+export * from './assign-user-permissions.mapper';
+export * from './create-permission.mapper';
 export * from './create-role.mapper';
 export * from './enable-two-factor.mapper';
 export * from './forgot-password.mapper';
@@ -6,9 +9,7 @@ export * from './refresh-token.mapper';
 export * from './register-user.mapper';
 export * from './resend-registration-otp.mapper';
 export * from './reset-password.mapper';
-export * from './update-role.mapper';
-export * from './assign-role-permissions.mapper';
-export * from './create-permission.mapper';
 export * from './update-permission.mapper';
+export * from './update-role.mapper';
 export * from './verify-two-factor.mapper';
 export * from './verify-user-registration.mapper';

@@ -69,6 +69,7 @@ export class PrismaRoleRepositoryAdapter implements RoleRepositoryPort {
       const data = permissionIds.map((permissionId) => ({
         roleId,
         permissionId,
+        assignedAt: new Date(),
       }));
 
       await this.prismaService.rolePermission.createMany({

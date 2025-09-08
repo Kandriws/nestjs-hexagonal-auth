@@ -11,4 +11,9 @@ export interface UserRepositoryPort {
     roleIds: string[],
     assignedById?: UserId | null,
   ): Promise<void>;
+  assignPermissions(
+    userId: UserId,
+    permissionIds: string[],
+    assignedById?: UserId | null,
+  ): Promise<void>;
 }

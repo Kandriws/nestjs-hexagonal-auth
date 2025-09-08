@@ -9,6 +9,7 @@ import {
   ForgotPasswordPort,
   ResetPasswordPort,
   AssignUserRolesPort,
+  AssignUserPermissionsPort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
@@ -70,6 +71,7 @@ import {
   ResendRegistrationOtpUseCase,
   ResetPasswordUseCase,
   AssignRolesToUserUseCase,
+  AssignPermissionsToUserUseCase,
   VerifyTwoFactorUseCase,
   VerifyUserRegistrationUseCase,
 } from './application/use-cases';
@@ -115,6 +117,10 @@ export const useCaseProviders = [
   {
     provide: AssignUserRolesPort,
     useClass: AssignRolesToUserUseCase,
+  },
+  {
+    provide: AssignUserPermissionsPort,
+    useClass: AssignPermissionsToUserUseCase,
   },
 ];
 

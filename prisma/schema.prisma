@@ -193,6 +193,7 @@ model UserPermission {
   userId       String
   permissionId String
   assignedById String?
+  assignedAt   DateTime   @default(now())
   assignedBy   User?      @relation("UserPermissionsAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
   user         User       @relation("UserPermissionsOwner", fields: [userId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)

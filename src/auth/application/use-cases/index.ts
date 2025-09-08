@@ -1,4 +1,5 @@
 export * from './assign-permissions-to-role.use-case';
+export * from './assign-permissions-to-user.use-case';
 export * from './assign-roles-to-user.use-case';
 export * from './create-permission.use-case';
 export * from './create-role.use-case';

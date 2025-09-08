@@ -30,6 +30,9 @@ import {
 import { AssignUserRolesDto } from '../dtos/assign-user-roles.dto';
 import { AssignUserRolesMapper } from '../mappers/assign-user-roles.mapper';
 import { AssignUserRolesPort } from 'src/auth/domain/ports/inbound/assign-user-roles.port';
+import { AssignUserPermissionsDto } from '../dtos/assign-user-permissions.dto';
+import { AssignUserPermissionsMapper } from '../mappers/assign-user-permissions.mapper';
+import { AssignUserPermissionsPort } from 'src/auth/domain/ports/inbound/assign-user-permissions.port';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import { CurrentUser } from 'src/auth/infrastructure/decorators/current-user.decorator';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
@@ -46,6 +49,8 @@ export class UserController {
   constructor(
     @Inject(AssignUserRolesPort)
     private readonly assignUserRolesPort: AssignUserRolesPort,
+    @Inject(AssignUserPermissionsPort)
+    private readonly assignUserPermissionsPort: AssignUserPermissionsPort,
   ) {}
 
   @Patch(':id/roles')
@@ -64,11 +69,42 @@ export class UserController {
     @Body() assignDto: AssignUserRolesDto,
     @CurrentUser() currentUser: TokenPayloadVo,
   ): Promise<ApiResponse<void>> {
-    const command = AssignUserRolesMapper.toCommand(id, assignDto);
-    command.assignedById = currentUser.getUserId();
+    const command = AssignUserRolesMapper.toCommand(
+      id,
+      assignDto,
+      currentUser.getUserId(),
+    );
     await this.assignUserRolesPort.execute(command);
     return ResponseFactory.ok<void>({
       message: 'Roles assigned to user successfully',
+    });
+  }
+
+  @Patch(':id/permissions')
+  @HttpCode(HttpStatus.OK)
+  @ApiUuidParam('id', 'User id')
+  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiOperation({
+    summary: 'Assign permissions to a user',
+    operationId: 'assignPermissionsToUser',
+  })
+  @ApiBadRequest()
+  @ApiUnauthorized()
+  @ApiNotFound()
+  async assignPermissions(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignDto: AssignUserPermissionsDto,
+    @CurrentUser() currentUser: TokenPayloadVo,
+  ): Promise<ApiResponse<void>> {
+    const command = AssignUserPermissionsMapper.toCommand(
+      id,
+      assignDto,
+      currentUser.getUserId(),
+    );
+
+    await this.assignUserPermissionsPort.execute(command);
+    return ResponseFactory.ok<void>({
+      message: 'Permissions assigned to user successfully',
     });
   }
 }

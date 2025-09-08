@@ -83,4 +83,31 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
       );
     }
   }
+
+  async assignPermissions(
+    userId: string,
+    permissionIds: string[],
+    assignedById?: string | null,
+  ): Promise<void> {
+    try {
+      await this.prismaService.userPermission.deleteMany({ where: { userId } });
+
+      if (!permissionIds || permissionIds.length === 0) return;
+
+      const data = permissionIds.map((permissionId) => ({
+        userId,
+        permissionId,
+        assignedById: assignedById ?? null,
+      }));
+
+      await this.prismaService.userPermission.createMany({
+        data,
+        skipDuplicates: true,
+      });
+    } catch {
+      throw new PersistenceInfrastructureException(
+        'Error assigning permissions to user',
+      );
+    }
+  }
 }
