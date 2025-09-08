@@ -56,4 +56,29 @@ export class PrismaRoleRepositoryAdapter implements RoleRepositoryPort {
       throw new PersistenceInfrastructureException('Error deleting role');
     }
   }
+
+  async assignPermissions(
+    roleId: string,
+    permissionIds: string[],
+  ): Promise<void> {
+    try {
+      await this.prismaService.rolePermission.deleteMany({ where: { roleId } });
+
+      if (!permissionIds || permissionIds.length === 0) return;
+
+      const data = permissionIds.map((permissionId) => ({
+        roleId,
+        permissionId,
+      }));
+
+      await this.prismaService.rolePermission.createMany({
+        data,
+        skipDuplicates: true,
+      });
+    } catch {
+      throw new PersistenceInfrastructureException(
+        'Error assigning permissions to role',
+      );
+    }
+  }
 }

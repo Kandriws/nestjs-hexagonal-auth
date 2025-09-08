@@ -9,6 +9,7 @@ export * from './resend-registration-otp.dto';
 export * from './reset-password.dto';
 export * from './role-response.dto';
 export * from './update-role.dto';
+export * from './assign-role-permissions.dto';
 export * from './create-permission.dto';
 export * from './update-permission.dto';
 export * from './permission-response.dto';

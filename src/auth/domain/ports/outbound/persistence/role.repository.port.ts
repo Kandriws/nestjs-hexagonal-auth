@@ -6,4 +6,5 @@ export interface RoleRepositoryPort {
   findAll(): Promise<Role[]>;
   save(role: Role): Promise<void>;
   delete(id: string): Promise<void>;
+  assignPermissions(roleId: string, permissionIds: string[]): Promise<void>;
 }

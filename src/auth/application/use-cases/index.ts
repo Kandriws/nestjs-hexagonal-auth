@@ -11,6 +11,7 @@ export * from './resend-registration-otp.use-case';
 export * from './reset-password.use-case';
 export * from './update-role.use-case';
 export * from './create-permission.use-case';
+export * from './assign-permissions-to-role.use-case';
 export * from './find-permissions.use-case';
 export * from './find-permission-by-id.use-case';
 export * from './update-permission.use-case';

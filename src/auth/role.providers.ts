@@ -4,6 +4,7 @@ import {
   DeleteRoleUseCase,
   FindRolesUseCase,
   UpdateRoleUseCase,
+  AssignPermissionsToRoleUseCase,
 } from './application/use-cases';
 import {
   CreateRolePort,
@@ -11,6 +12,7 @@ import {
   UpdateRolePort,
   FindRolesPort,
   FindRoleByIdPort,
+  AssignRolePermissionsPort,
 } from './domain/ports/inbound';
 import { RoleRepositoryPort } from './domain/ports/outbound/persistence';
 import { PrismaRoleRepositoryAdapter } from './infrastructure/adapters/outbound/persistence';
@@ -31,6 +33,10 @@ export const useCaseProviders = [
   {
     provide: UpdateRolePort,
     useClass: UpdateRoleUseCase,
+  },
+  {
+    provide: AssignRolePermissionsPort,
+    useClass: AssignPermissionsToRoleUseCase,
   },
   {
     provide: DeleteRolePort,

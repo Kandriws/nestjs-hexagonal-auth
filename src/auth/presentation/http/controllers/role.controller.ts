@@ -23,6 +23,7 @@ import {
   SwaggerErrorResponseDto,
   SwaggerRoleResponseDto,
   SwaggerRolesResponseDto,
+  SwaggerMessageResponseDto,
 } from 'src/shared/infrastructure/dto';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import {
@@ -41,7 +42,13 @@ import {
   ApiUuidParam,
 } from 'src/shared/infrastructure/decorators';
 import { CreateRoleDto, RoleResponseDto, UpdateRoleDto } from '../dtos';
-import { CreateRoleMapper, UpdateRoleMapper } from '../mappers';
+import {
+  CreateRoleMapper,
+  UpdateRoleMapper,
+  AssignRolePermissionsMapper,
+} from '../mappers';
+import { AssignRolePermissionsDto } from '../dtos';
+import { AssignRolePermissionsPort } from 'src/auth/domain/ports/inbound';
 
 @ApiTags('Roles')
 @ApiExtraModels(
@@ -63,6 +70,8 @@ export class RoleController {
     private readonly findRolesPort: FindRolesPort,
     @Inject(FindRoleByIdPort)
     private readonly findRoleByIdPort: FindRoleByIdPort,
+    @Inject(AssignRolePermissionsPort)
+    private readonly assignRolePermissionsPort: AssignRolePermissionsPort,
   ) {}
 
   @Post()
@@ -86,7 +95,7 @@ export class RoleController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a role', operationId: 'updateRole' })
   @ApiUuidParam('id', 'Role id')
-  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiOkDto(SwaggerMessageResponseDto)
   @ApiNotFound()
   @ApiBadRequest()
   @ApiUnauthorized()
@@ -133,7 +142,7 @@ export class RoleController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get a role by id', operationId: 'findRoleById' })
   @ApiUuidParam('id', 'Role id')
-  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiOkDto(SwaggerMessageResponseDto)
   @ApiNotFound()
   @ApiUnauthorized()
   async findRoleById(
@@ -143,6 +152,28 @@ export class RoleController {
     return ResponseFactory.ok<RoleResponseDto>({
       data: CreateRoleMapper.toResponse(role),
       message: 'Role retrieved successfully',
+    });
+  }
+
+  @Patch(':id/permissions')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Assign permissions to a role',
+    operationId: 'assignPermissionsToRole',
+  })
+  @ApiUuidParam('id', 'Role id')
+  @ApiOkDto(SwaggerRoleResponseDto)
+  @ApiNotFound()
+  @ApiBadRequest()
+  @ApiUnauthorized()
+  async assignPermissions(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignDto: AssignRolePermissionsDto,
+  ): Promise<ApiResponse<void>> {
+    const command = AssignRolePermissionsMapper.toCommand(id, assignDto);
+    await this.assignRolePermissionsPort.execute(command);
+    return ResponseFactory.ok<void>({
+      message: 'Permissions assigned to role successfully',
     });
   }
 }
