@@ -8,6 +8,7 @@ import {
   RoleAlreadyExistsException,
   RoleNotFoundException,
 } from 'src/auth/domain/exceptions';
+import { UserId } from 'src/shared/domain/types';
 
 @Injectable()
 export class PrismaRoleRepositoryAdapter implements RoleRepositoryPort {
@@ -81,5 +82,14 @@ export class PrismaRoleRepositoryAdapter implements RoleRepositoryPort {
         'Error assigning permissions to role',
       );
     }
+  }
+
+  async findByUserId(userId: UserId): Promise<Role[]> {
+    const raws = await this.prismaService.userRole.findMany({
+      where: { userId },
+      include: { role: true },
+    });
+
+    return raws.map((userRole) => RoleMapper.toDomain(userRole.role));
   }
 }

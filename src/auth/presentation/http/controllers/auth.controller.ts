@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Inject, Post, Get } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -55,6 +55,9 @@ import {
   RequestContext,
   RequestMetadata,
 } from 'src/shared/infrastructure/decorators/request-metadata.decorator';
+import { GetCurrentUserPort } from 'src/auth/domain/ports/inbound/get-current-user.port';
+import { MeResponseDto } from '../dtos';
+import { MeMapper } from '../mappers';
 import { EnableTwoFactorDto } from '../dtos/enable-two-factor.dto';
 import { EnableTwoFactorResponse } from 'src/auth/domain/ports/outbound/commands/enable-two-factor-response';
 import { Public } from 'src/auth/infrastructure/decorators/public.decorator';
@@ -91,7 +94,32 @@ export class AuthController {
     private readonly forgotPasswordPort: ForgotPasswordPort,
     @Inject(ResetPasswordPort)
     private readonly resetPasswordPort: ResetPasswordPort,
+    @Inject(GetCurrentUserPort)
+    private readonly getCurrentUserPort: GetCurrentUserPort,
   ) {}
+
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Get current user's profile",
+    operationId: 'getCurrentUser',
+  })
+  @ApiOkDto(MeResponseDto)
+  @ApiUnauthorized()
+  async me(
+    @CurrentUser() currentUser: TokenPayloadVo,
+  ): Promise<ApiResponse<MeResponseDto>> {
+    const result = await this.getCurrentUserPort.execute(
+      currentUser.getUserId(),
+    );
+
+    const dto = MeMapper.toDto(result);
+
+    return ResponseFactory.ok<MeResponseDto>({
+      data: dto,
+      message: 'Current user retrieved successfully',
+    });
+  }
 
   @Public()
   @Post('register')

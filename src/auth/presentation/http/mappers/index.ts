@@ -7,6 +7,7 @@ export * from './create-user.mapper';
 export * from './enable-two-factor.mapper';
 export * from './forgot-password.mapper';
 export * from './login-user.mapper';
+export * from './me.mapper';
 export * from './refresh-token.mapper';
 export * from './register-user.mapper';
 export * from './resend-registration-otp.mapper';

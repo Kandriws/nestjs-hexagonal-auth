@@ -25,6 +25,7 @@ export * from './find-role-by-id.port';
 export * from './find-roles.port';
 export * from './find-users.port';
 export * from './forgot-password.port';
+export * from './get-current-user.port';
 export * from './login-user.port';
 export * from './refresh-token.port';
 export * from './register-user.port';

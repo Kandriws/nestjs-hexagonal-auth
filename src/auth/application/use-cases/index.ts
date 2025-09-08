@@ -11,6 +11,7 @@ export * from './find-permissions.use-case';
 export * from './find-role-by-id.use-case';
 export * from './find-roles.use-case';
 export * from './forgot-password.use-case';
+export * from './get-current-user.use-case';
 export * from './login-user.use-case';
 export * from './refresh-token.use-case';
 export * from './register-user.use-case';

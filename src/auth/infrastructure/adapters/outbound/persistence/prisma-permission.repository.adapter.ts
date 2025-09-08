@@ -4,6 +4,7 @@ import { PermissionRepositoryPort } from 'src/auth/domain/ports/outbound/persist
 import { PrismaService } from 'src/shared/infrastructure/prisma/prisma.service';
 import { PrismaPermissionMapper } from './mappers/prisma-permission.mapper';
 import { PersistenceInfrastructureException } from 'src/auth/domain/exceptions';
+import { UserId } from 'src/shared/domain/types';
 
 @Injectable()
 export class PrismaPermissionRepositoryAdapter
@@ -45,5 +46,16 @@ export class PrismaPermissionRepositoryAdapter
     } catch {
       throw new PersistenceInfrastructureException('Error deleting permission');
     }
+  }
+
+  async findByUserId(userId: UserId): Promise<Permission[]> {
+    const raws = await this.prismaService.userPermission.findMany({
+      where: { userId },
+      include: { permission: true },
+    });
+
+    return raws.map((userPermission) =>
+      PrismaPermissionMapper.toDomain(userPermission.permission),
+    );
   }
 }

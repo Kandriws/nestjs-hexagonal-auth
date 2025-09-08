@@ -5,6 +5,7 @@ export * from './create-role.dto';
 export * from './enable-two-factor.dto';
 export * from './forgot-password.dto';
 export * from './login-user.dto';
+export * from './me-response.dto';
 export * from './message-response.dto';
 export * from './permission-response.dto';
 export * from './refresh-token.dto';
