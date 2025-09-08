@@ -18,6 +18,7 @@ import { roleProviders } from './role.providers';
 import { PermissionController } from './presentation/http/controllers/permission.controller';
 import { permissionProviders } from './permission.providers';
 import { UserController } from './presentation/http/controllers/user.controller';
+import userProviders from './user.providers';
 
 @Module({
   controllers: [
@@ -32,6 +33,7 @@ import { UserController } from './presentation/http/controllers/user.controller'
     ...allAuthProviders,
     ...roleProviders,
     ...permissionProviders,
+    ...userProviders,
   ],
   imports: [
     PassportModule,

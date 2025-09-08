@@ -8,14 +8,11 @@ import {
   VerifyTwoFactorPort,
   ForgotPasswordPort,
   ResetPasswordPort,
-  AssignUserRolesPort,
-  AssignUserPermissionsPort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
   TokenRepositoryPort,
   TwoFactorSettingRepositoryPort,
-  UserRepositoryPort,
 } from './domain/ports/outbound/persistence';
 import {
   EncryptionKeyStorePort,
@@ -39,7 +36,6 @@ import {
 
 import {
   PrismaOtpRepositoryAdapter,
-  PrismaUserRepositoryAdapter,
   PrismaTokenRepositoryAdapter,
   PrismaTwoFactorSettingRepositoryAdapter,
 } from './infrastructure/adapters/outbound/persistence';
@@ -70,8 +66,6 @@ import {
   RegisterUserUseCase,
   ResendRegistrationOtpUseCase,
   ResetPasswordUseCase,
-  AssignRolesToUserUseCase,
-  AssignPermissionsToUserUseCase,
   VerifyTwoFactorUseCase,
   VerifyUserRegistrationUseCase,
 } from './application/use-cases';
@@ -114,21 +108,9 @@ export const useCaseProviders = [
     provide: ResetPasswordPort,
     useClass: ResetPasswordUseCase,
   },
-  {
-    provide: AssignUserRolesPort,
-    useClass: AssignRolesToUserUseCase,
-  },
-  {
-    provide: AssignUserPermissionsPort,
-    useClass: AssignPermissionsToUserUseCase,
-  },
 ];
 
 export const persistenceProviders = [
-  {
-    provide: UserRepositoryPort,
-    useClass: PrismaUserRepositoryAdapter,
-  },
   {
     provide: OtpRepositoryPort,
     useClass: PrismaOtpRepositoryAdapter,

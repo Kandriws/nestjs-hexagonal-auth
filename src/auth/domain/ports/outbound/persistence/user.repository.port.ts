@@ -5,6 +5,7 @@ export const UserRepositoryPort = Symbol('UserRepositoryPort');
 export interface UserRepositoryPort {
   findById(id: UserId): Promise<User | null>;
   findByEmail(email: Email): Promise<User | null>;
+  findAll(): Promise<User[]>;
   save(user: User): Promise<void>;
   assignRoles(
     userId: UserId,

@@ -23,6 +23,7 @@ export * from './find-permission-by-id.port';
 export * from './find-permissions.port';
 export * from './find-role-by-id.port';
 export * from './find-roles.port';
+export * from './find-users.port';
 export * from './forgot-password.port';
 export * from './login-user.port';
 export * from './refresh-token.port';

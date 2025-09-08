@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   ParseUUIDPipe,
+  Get,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -13,6 +14,9 @@ import {
   ApiTags,
   ApiOperation,
 } from '@nestjs/swagger';
+import { FindUsersPort } from 'src/auth/domain/ports/inbound/find-users.port';
+import { SwaggerUsersResponseDto } from 'src/shared/infrastructure/dto/swagger-user-response.dto';
+import { CreateUserMapper } from '../mappers/create-user.mapper';
 import {
   SwaggerErrorResponseDto,
   SwaggerRoleResponseDto,
@@ -51,7 +55,22 @@ export class UserController {
     private readonly assignUserRolesPort: AssignUserRolesPort,
     @Inject(AssignUserPermissionsPort)
     private readonly assignUserPermissionsPort: AssignUserPermissionsPort,
+    @Inject(FindUsersPort)
+    private readonly findUsersPort: FindUsersPort,
   ) {}
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all users', operationId: 'findAllUsers' })
+  @ApiOkDto(SwaggerUsersResponseDto)
+  @ApiUnauthorized()
+  async findAll(): Promise<ApiResponse<any[]>> {
+    const users = await this.findUsersPort.execute();
+    return ResponseFactory.ok<any[]>({
+      data: users.map(CreateUserMapper.toResponse),
+      message: 'Users retrieved successfully',
+    });
+  }
 
   @Patch(':id/roles')
   @HttpCode(HttpStatus.OK)

@@ -33,6 +33,11 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
     return PrismaUserMapper.toDomain(user);
   }
 
+  async findAll(): Promise<User[]> {
+    const users = await this.prismaService.user.findMany();
+    return users.map(PrismaUserMapper.toDomain);
+  }
+
   async save(user: User): Promise<void> {
     const prismaUser = PrismaUserMapper.toPersistence(user);
     try {
