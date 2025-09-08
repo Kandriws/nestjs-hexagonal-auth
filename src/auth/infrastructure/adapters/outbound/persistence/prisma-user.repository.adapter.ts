@@ -56,4 +56,31 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
       );
     }
   }
+
+  async assignRoles(
+    userId: string,
+    roleIds: string[],
+    assignedById?: string | null,
+  ): Promise<void> {
+    try {
+      await this.prismaService.userRole.deleteMany({ where: { userId } });
+
+      if (!roleIds || roleIds.length === 0) return;
+
+      const data = roleIds.map((roleId) => ({
+        userId,
+        roleId,
+        assignedById: assignedById ?? null,
+      }));
+
+      await this.prismaService.userRole.createMany({
+        data,
+        skipDuplicates: true,
+      });
+    } catch {
+      throw new PersistenceInfrastructureException(
+        'Error assigning roles to user',
+      );
+    }
+  }
 }

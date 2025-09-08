@@ -17,9 +17,15 @@ import { RoleController } from './presentation/http/controllers/role.controller'
 import { roleProviders } from './role.providers';
 import { PermissionController } from './presentation/http/controllers/permission.controller';
 import { permissionProviders } from './permission.providers';
+import { UserController } from './presentation/http/controllers/user.controller';
 
 @Module({
-  controllers: [AuthController, RoleController, PermissionController],
+  controllers: [
+    AuthController,
+    PermissionController,
+    RoleController,
+    UserController,
+  ],
   providers: [
     JwtTokenConfigMapper,
     JwtStrategy,
@@ -28,9 +34,9 @@ import { permissionProviders } from './permission.providers';
     ...permissionProviders,
   ],
   imports: [
+    PassportModule,
     PrismaModule,
     SharedModule,
-    PassportModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync({
       imports: [ConfigModule.forFeature(jwtConfig)],

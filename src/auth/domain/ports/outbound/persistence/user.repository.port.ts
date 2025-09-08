@@ -6,4 +6,9 @@ export interface UserRepositoryPort {
   findById(id: UserId): Promise<User | null>;
   findByEmail(email: Email): Promise<User | null>;
   save(user: User): Promise<void>;
+  assignRoles(
+    userId: UserId,
+    roleIds: string[],
+    assignedById?: UserId | null,
+  ): Promise<void>;
 }
