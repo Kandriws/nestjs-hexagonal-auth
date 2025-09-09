@@ -25,6 +25,7 @@ import {
   RefreshTokenDto,
   VerifyTwoFactorDto,
   ForgotPasswordDto,
+  MeResponseDto,
 } from '../dtos';
 import { RegisterUserPort } from 'src/auth/domain/ports/inbound/register-user.port';
 import {
@@ -56,7 +57,6 @@ import {
   RequestMetadata,
 } from 'src/shared/infrastructure/decorators/request-metadata.decorator';
 import { GetCurrentUserPort } from 'src/auth/domain/ports/inbound/get-current-user.port';
-import { MeResponseDto } from '../dtos';
 import { MeMapper } from '../mappers';
 import { EnableTwoFactorDto } from '../dtos/enable-two-factor.dto';
 import { EnableTwoFactorResponse } from 'src/auth/domain/ports/outbound/commands/enable-two-factor-response';
