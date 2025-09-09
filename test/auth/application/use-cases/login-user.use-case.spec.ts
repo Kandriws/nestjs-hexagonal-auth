@@ -4,6 +4,8 @@ import {
   TokenRepositoryPort,
   OtpRepositoryPort,
   TwoFactorSettingRepositoryPort,
+  RoleRepositoryPort,
+  PermissionRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
 import {
   HasherPort,
@@ -40,6 +42,8 @@ describe('LoginUserUseCase', () => {
   let mockTotp: jest.Mocked<TOTPPort>;
   let mockEncryption: jest.Mocked<EncryptionPort>;
   let mockOtpRepo: jest.Mocked<OtpRepositoryPort>;
+  let mockRoleRepo: jest.Mocked<RoleRepositoryPort>;
+  let mockPermissionRepo: jest.Mocked<PermissionRepositoryPort>;
 
   const userId = 'user-1' as UserId;
   const userEmail = 'test@example.com';
@@ -57,6 +61,12 @@ describe('LoginUserUseCase', () => {
     mockTotp = createMock<TOTPPort>();
     mockEncryption = createMock<EncryptionPort>();
     mockOtpRepo = createMock<OtpRepositoryPort>();
+    mockRoleRepo = createMock<RoleRepositoryPort>();
+    mockPermissionRepo = createMock<PermissionRepositoryPort>();
+
+    // default to empty lists so createAndPersistTokens can map over them
+    mockRoleRepo.findByUserId.mockResolvedValue([] as any);
+    mockPermissionRepo.findByUserId.mockResolvedValue([] as any);
 
     // Default two-factor record: no verification required for these tests
     mockTwoFactorSettingRepo.findByUserId.mockResolvedValue({
@@ -68,6 +78,8 @@ describe('LoginUserUseCase', () => {
       mockHasher,
       mockTokenProvider,
       mockTokenRepo,
+      mockRoleRepo,
+      mockPermissionRepo,
       mockUuid,
       mockOtpSender,
       mockRateLimit,
