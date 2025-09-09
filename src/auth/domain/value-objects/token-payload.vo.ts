@@ -8,6 +8,8 @@ interface CreateTokenPayloadVoParams {
   expiresAt: Date;
   issuedAt: Date;
   jti?: string;
+  roles?: { name: string; realm: string }[];
+  permissions?: { name: string; realm: string }[];
 }
 
 export class TokenPayloadVo {
@@ -17,6 +19,8 @@ export class TokenPayloadVo {
     private readonly _expiresAt: Date,
     private readonly _issuedAt: Date,
     private readonly _jti?: string,
+    private readonly _roles?: { name: string; realm: string }[],
+    private readonly _permissions?: { name: string; realm: string }[],
   ) {}
 
   /**
@@ -49,6 +53,8 @@ export class TokenPayloadVo {
         new Date(createParams.expiresAt),
         new Date(createParams.issuedAt),
         createParams.jti,
+        createParams.roles,
+        createParams.permissions,
       ),
     );
   }
@@ -104,6 +110,8 @@ export class TokenPayloadVo {
       userId: this._userId,
       email: this._email.getValue(),
       jti: this._jti,
+      roles: this._roles,
+      permissions: this._permissions,
     };
   }
 
@@ -133,5 +141,13 @@ export class TokenPayloadVo {
 
   getJti(): string | undefined {
     return this._jti;
+  }
+
+  getRoles(): string[] {
+    return (this._roles || []).map((r) => r.name);
+  }
+
+  getPermissions(): string[] {
+    return (this._permissions || []).map((p) => p.name);
   }
 }

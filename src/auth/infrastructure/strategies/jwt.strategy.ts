@@ -42,6 +42,8 @@ export class JwtStrategy extends PassportStrategy(
         expiresAt: new Date(secondsToMilliseconds(payload.exp)),
         issuedAt: new Date(secondsToMilliseconds(payload.iat)),
         jti: payload.jti ? String(payload.jti) : undefined,
+        roles: payload.roles,
+        permissions: payload.permissions,
       });
     } catch (err) {
       this.logger.error('Token validation failed', {

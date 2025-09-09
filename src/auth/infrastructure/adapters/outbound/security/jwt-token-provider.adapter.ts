@@ -47,6 +47,8 @@ export class JwtTokenProviderAdapter implements TokenProviderPort {
         expiresAt: new Date(secondsToMilliseconds(payload.exp)),
         issuedAt: new Date(secondsToMilliseconds(payload.iat)),
         jti: payload.jti,
+        roles: payload.roles,
+        permissions: payload.permissions,
       });
     } catch {
       throw new InvalidTokenPayloadException(`Invalid token for type: ${type}`);
@@ -65,6 +67,8 @@ export class JwtTokenProviderAdapter implements TokenProviderPort {
         expiresAt: new Date(secondsToMilliseconds(payload.exp)),
         issuedAt: new Date(secondsToMilliseconds(payload.iat)),
         jti: payload.jti ? String(payload.jti) : undefined,
+        roles: payload.roles,
+        permissions: payload.permissions,
       });
     } catch (error) {
       console.error('Error decoding JWT:', error);
