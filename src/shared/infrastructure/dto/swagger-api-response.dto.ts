@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MeResponseDto } from 'src/auth/presentation/http/dtos';
 
 export class SwaggerMessageResponseDto {
   @ApiProperty({ example: true })
@@ -54,6 +55,21 @@ export class SwaggerEnableTwoFactorResponseDto {
 
   @ApiProperty({ type: SwaggerEnableTwoFactorDataDto })
   data: SwaggerEnableTwoFactorDataDto;
+
+  @ApiProperty({ description: 'Human readable message' })
+  message?: string;
+
+  @ApiProperty({ example: new Date().toISOString() })
+  timestamp: string;
+}
+
+export class SwaggerMeResponseDto {
+  @ApiProperty({ example: true })
+  success: boolean;
+
+  // Reference existing MeResponseDto schema so nested models are resolved
+  @ApiProperty({ type: () => MeResponseDto })
+  data: MeResponseDto;
 
   @ApiProperty({ description: 'Human readable message' })
   message?: string;

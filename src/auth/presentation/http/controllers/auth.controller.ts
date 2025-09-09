@@ -15,6 +15,7 @@ import {
   SwaggerMessageResponseDto,
   SwaggerAuthTokensResponseDto,
   SwaggerEnableTwoFactorResponseDto,
+  SwaggerMeResponseDto,
 } from 'src/shared/infrastructure/dto/swagger-api-response.dto';
 import { SwaggerErrorResponseDto } from 'src/shared/infrastructure/dto/swagger-error-response.dto';
 import {
@@ -72,6 +73,8 @@ import { ResetPasswordMapper } from '../mappers/reset-password.mapper';
   SwaggerAuthTokensResponseDto,
   SwaggerEnableTwoFactorResponseDto,
   SwaggerErrorResponseDto,
+  MeResponseDto,
+  SwaggerMeResponseDto,
 )
 @Controller('auth')
 export class AuthController {
@@ -104,7 +107,7 @@ export class AuthController {
     summary: "Get current user's profile",
     operationId: 'getCurrentUser',
   })
-  @ApiOkDto(MeResponseDto)
+  @ApiOkDto(SwaggerMeResponseDto)
   @ApiUnauthorized()
   async me(
     @CurrentUser() currentUser: TokenPayloadVo,
