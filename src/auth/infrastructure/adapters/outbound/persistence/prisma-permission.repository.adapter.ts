@@ -49,13 +49,41 @@ export class PrismaPermissionRepositoryAdapter
   }
 
   async findByUserId(userId: UserId): Promise<Permission[]> {
-    const raws = await this.prismaService.userPermission.findMany({
+    const userPermissionRaws = await this.prismaService.userPermission.findMany(
+      {
+        where: { userId },
+        include: { permission: true },
+      },
+    );
+
+    const directPermissions = userPermissionRaws.map((up) => up.permission);
+
+    const userRoleRaws = await this.prismaService.userRole.findMany({
       where: { userId },
-      include: { permission: true },
+      include: { role: true },
     });
 
-    return raws.map((userPermission) =>
-      PrismaPermissionMapper.toDomain(userPermission.permission),
-    );
+    const roleIds = userRoleRaws.map((ur) => ur.role.id);
+
+    let rolePermissions: Array<any> = [];
+    if (roleIds.length > 0) {
+      const rolePermissionRaws =
+        await this.prismaService.rolePermission.findMany({
+          where: { roleId: { in: roleIds } },
+          include: { permission: true },
+        });
+
+      rolePermissions = rolePermissionRaws.map((rp) => rp.permission);
+    }
+
+    const combined = [...directPermissions, ...rolePermissions];
+    const uniqueByIdMap = new Map<string, any>();
+    for (const p of combined) {
+      if (p && !uniqueByIdMap.has(p.id)) uniqueByIdMap.set(p.id, p);
+    }
+
+    const uniquePermissions = Array.from(uniqueByIdMap.values());
+
+    return uniquePermissions.map(PrismaPermissionMapper.toDomain);
   }
 }

@@ -10,6 +10,8 @@ import {
   TokenRepositoryPort,
   TwoFactorSettingRepositoryPort,
   UserRepositoryPort,
+  RoleRepositoryPort,
+  PermissionRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
 import {
   EncryptionPort,
@@ -28,6 +30,8 @@ import {
 } from 'src/auth/domain/exceptions';
 import { LoginRateLimitPort } from 'src/auth/domain/ports/outbound/policy';
 import { RateLimitInfo } from 'src/auth/domain/types';
+import { Permission } from 'src/auth/domain/entities/permission.entity';
+import { Role } from 'src/auth/domain/entities/role.entity';
 
 @Injectable()
 export class LoginUserUseCase implements LoginUserPort {
@@ -40,6 +44,10 @@ export class LoginUserUseCase implements LoginUserPort {
     private tokenProvider: TokenProviderPort,
     @Inject(TokenRepositoryPort)
     private tokenRepository: TokenRepositoryPort,
+    @Inject(RoleRepositoryPort)
+    private roleRepository: RoleRepositoryPort,
+    @Inject(PermissionRepositoryPort)
+    private permissionRepository: PermissionRepositoryPort,
     @Inject(UUIDPort)
     private uuid: UUIDPort,
     @Inject(OtpSenderPort)
@@ -197,11 +205,23 @@ export class LoginUserUseCase implements LoginUserPort {
     command: LoginUserCommand,
   ): Promise<AuthTokensResponse> {
     const tokenId = this.uuid.generate();
+    const roles = await this.roleRepository.findByUserId(user.id);
+    const permissions = await this.permissionRepository.findByUserId(user.id);
 
     const accessToken = await this.tokenProvider.generate(
       user.id,
       user.email,
       TokenType.ACCESS,
+      {
+        roles: roles.map((role: Role) => ({
+          name: role.name,
+          realm: role.realm,
+        })),
+        permissions: permissions.map((permission: Permission) => ({
+          name: permission.name,
+          realm: permission.realm,
+        })),
+      },
     );
 
     const refreshToken = await this.tokenProvider.generate(

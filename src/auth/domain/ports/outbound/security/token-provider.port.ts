@@ -4,10 +4,7 @@ import { UserId } from 'src/shared/domain/types';
 import { EmailVo } from 'src/shared/domain/value-objects';
 export const TokenProviderPort = Symbol('TokenProviderPort');
 
-export type TokenExtraData = Readonly<
-  Record<string, string | number | boolean>
->;
-
+export type TokenExtraData = Readonly<Record<string, unknown>>;
 export interface TokenProviderPort {
   generate(
     userId: UserId,

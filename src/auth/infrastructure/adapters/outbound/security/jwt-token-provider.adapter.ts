@@ -29,7 +29,7 @@ export class JwtTokenProviderAdapter implements TokenProviderPort {
     const payload = {
       userId,
       email: email.getValue(),
-      jti: extra?.jti !== undefined ? String(extra.jti) : undefined,
+      ...extra,
     };
     return this.jwtService.signAsync(payload, jwtConfig);
   }
