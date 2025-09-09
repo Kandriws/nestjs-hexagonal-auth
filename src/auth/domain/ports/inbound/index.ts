@@ -27,6 +27,7 @@ export * from './find-users.port';
 export * from './forgot-password.port';
 export * from './get-current-user.port';
 export * from './login-user.port';
+export * from './login-with-google.port';
 export * from './refresh-token.port';
 export * from './register-user.port';
 export * from './resend-registration-otp.port';

@@ -8,6 +8,7 @@ import {
   VerifyTwoFactorPort,
   ForgotPasswordPort,
   ResetPasswordPort,
+  LoginWithGooglePort,
 } from './domain/ports/inbound';
 import {
   OtpRepositoryPort,
@@ -68,6 +69,7 @@ import {
   ResetPasswordUseCase,
   VerifyTwoFactorUseCase,
   VerifyUserRegistrationUseCase,
+  LoginWithGoogleUseCase,
 } from './application/use-cases';
 import { FileEncryptionKeyStoreAdapter } from './infrastructure/adapters/outbound/security/file-encryption-key-store.adapter';
 
@@ -107,6 +109,10 @@ export const useCaseProviders = [
   {
     provide: ResetPasswordPort,
     useClass: ResetPasswordUseCase,
+  },
+  {
+    provide: LoginWithGooglePort,
+    useClass: LoginWithGoogleUseCase,
   },
 ];
 

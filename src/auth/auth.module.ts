@@ -19,6 +19,9 @@ import { PermissionController } from './presentation/http/controllers/permission
 import { permissionProviders } from './permission.providers';
 import { UserController } from './presentation/http/controllers/user.controller';
 import userProviders from './user.providers';
+import { GoogleAuthController } from './presentation/http/controllers/google-auth.controller';
+import googleOauthConfig from './infrastructure/config/google-oauth.config';
+import { GoogleStrategy } from './infrastructure/strategies/google-oauth.strategy';
 
 @Module({
   controllers: [
@@ -26,10 +29,12 @@ import userProviders from './user.providers';
     PermissionController,
     RoleController,
     UserController,
+    GoogleAuthController,
   ],
   providers: [
     JwtTokenConfigMapper,
     JwtStrategy,
+    GoogleStrategy,
     ...allAuthProviders,
     ...roleProviders,
     ...permissionProviders,
@@ -46,6 +51,7 @@ import userProviders from './user.providers';
       inject: [jwtConfig.KEY],
     }),
     ConfigModule.forFeature(securityConfig),
+    ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forFeature(appConfig),
   ],
 })

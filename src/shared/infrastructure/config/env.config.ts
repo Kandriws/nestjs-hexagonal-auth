@@ -57,6 +57,13 @@ interface EnvConfig {
     from: string;
     fromName: string;
   };
+  oauth: {
+    google: {
+      clientId: string;
+      clientSecret: string;
+      callbackUrl: string;
+    };
+  };
   security: {
     rateLimitProfile: string;
     saltRounds: number;
@@ -129,6 +136,11 @@ const envVarsSchema = joi
     MAIL_PASS: joi.string().required(),
     MAIL_FROM_EMAIL: joi.string().email().required(),
     MAIL_FROM_NAME: joi.string().default('No Reply'),
+
+    // OAUTH
+    GOOGLE_CLIENT_ID: joi.string().required(),
+    GOOGLE_CLIENT_SECRET: joi.string().required(),
+    GOOGLE_CALLBACK_URL: joi.string().uri().required(),
 
     // Security
     RATE_LIMIT_PROFILE: joi
@@ -221,6 +233,13 @@ export const envs: EnvConfig = {
     },
     from: value.MAIL_FROM_EMAIL,
     fromName: value.MAIL_FROM_NAME,
+  },
+  oauth: {
+    google: {
+      clientId: value.GOOGLE_CLIENT_ID,
+      clientSecret: value.GOOGLE_CLIENT_SECRET,
+      callbackUrl: value.GOOGLE_CALLBACK_URL,
+    },
   },
   security: {
     rateLimitProfile: value.RATE_LIMIT_PROFILE,

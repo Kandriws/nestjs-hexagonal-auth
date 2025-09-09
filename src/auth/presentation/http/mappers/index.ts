@@ -9,6 +9,7 @@ export * from './forgot-password.mapper';
 export * from './login-user.mapper';
 export * from './me.mapper';
 export * from './refresh-token.mapper';
+export * from './login-with-google.mapper';
 export * from './register-user.mapper';
 export * from './resend-registration-otp.mapper';
 export * from './reset-password.mapper';
