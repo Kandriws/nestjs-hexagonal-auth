@@ -105,6 +105,11 @@ npm run test:cov   # With coverage
 
 Interactive docs available at: `http://localhost:3000/api/docs`
 
+How to use Swagger UI
+- Click the "Authorize" button on the top-right of the docs UI.
+- Paste a Bearer token in the `Bearer <token>` format to authenticate requests.
+- The UI is configured to persist authorization between reloads (when supported).
+
 **Main endpoints:**
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User login
