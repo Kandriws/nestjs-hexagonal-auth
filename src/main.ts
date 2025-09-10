@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CustomValidationPipe } from './shared/infrastructure/pipes/validation.pipe';
 import { GlobalExceptionsFilter } from './shared/infrastructure/exceptions/global-exceptions.filter';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { setupSwagger } from './shared/infrastructure/config/swagger.config';
 import * as morgan from 'morgan';
 
 async function bootstrap() {
@@ -12,19 +12,9 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionsFilter());
   app.enableCors();
   app.use(morgan('dev'));
+  app.setGlobalPrefix('api');
 
-  const config = new DocumentBuilder()
-    .setTitle('Auth API')
-    .setDescription('Authentication API documented with Swagger')
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'jwt',
-    )
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  setupSwagger(app);
 
   await app.listen(3000);
 }
