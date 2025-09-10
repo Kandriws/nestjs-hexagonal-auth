@@ -144,6 +144,7 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user', operationId: 'registerUser' })

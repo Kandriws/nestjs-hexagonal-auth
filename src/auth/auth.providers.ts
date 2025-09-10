@@ -52,8 +52,8 @@ import {
 } from './infrastructure/adapters/outbound/security';
 import {
   OtpPolicyAdapter,
-  PrismaLoginRateLimitAdapter,
   PrismaOtpRateLimitAdapter,
+  RedisLoginRateLimitAdapter,
 } from './infrastructure/adapters/outbound/policy';
 import {
   OtpNotificationSenderAdapter,
@@ -183,7 +183,7 @@ export const policyProviders = [
   },
   {
     provide: LoginRateLimitPort,
-    useClass: PrismaLoginRateLimitAdapter,
+    useClass: RedisLoginRateLimitAdapter,
   },
 ];
 

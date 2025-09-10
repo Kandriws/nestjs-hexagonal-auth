@@ -74,6 +74,11 @@ export class DateTimeVO {
     return Math.ceil(diffMs / 60_000);
   }
 
+  secondsUntil(other: DateTimeVO): number {
+    const diffMs = other.getTime() - this.getTime();
+    return Math.ceil(diffMs / 1000);
+  }
+
   static now(): DateTimeVO {
     return new DateTimeVO(new Date());
   }
