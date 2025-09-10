@@ -22,7 +22,7 @@ export class NameVo {
       );
     }
 
-    if (!/^[a-zA-Z\s]+$/.test(value)) {
+    if (!/^[\p{L}\s]+$/u.test(value)) {
       throw new InvalidNameException(
         'Name can only contain letters and spaces',
       );
