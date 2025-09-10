@@ -6,7 +6,8 @@
 
 | | |
 |---|---|
-| **Author** | Kewin Caviedes 🧑‍💻 |
+| **Author** | Kewin Caviedes 🧑‍💻 ([@Kandriws](https://github.com/Kandriws)) |
+| **LinkedIn** | [kewin-caviedes](https://www.linkedin.com/in/kewin-caviedes/) |
 | **Version** | 1.0 ‑ July 18 2025 |
 | **Audience** | Backend engineers, architects, code-review heroes |
 
