@@ -8,6 +8,7 @@ services:
       - '${PORT:-3000}:3000'
     depends_on:
       - postgres
+      - redis
     networks:
       - nest-network
     restart: always
@@ -16,7 +17,6 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    # This will run migrations in development mode
     command: sh -c "npx prisma migrate dev --name auto-migration && npm run start:dev"
 
   postgres:
@@ -36,8 +36,47 @@ services:
       - nest-network
     restart: always
 
+  redis:
+    image: redis:7-alpine
+    container_name: nest-auth-redis-dev
+    ports:
+      - '${CACHE_REDIS_PORT:-6379}:6379'
+    command: ['redis-server', '--requirepass', '${CACHE_REDIS_PASSWORD}']
+    environment:
+      - REDIS_PASSWORD=${CACHE_REDIS_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - nest-network
+    restart: always
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    container_name: nest-auth-redisinsight-dev
+    ports:
+      - '5540:5540'
+    environment:
+      - RI_BIND=0.0.0.0
+      # Preconfigure a single Redis connection using existing project env vars.
+      # Redis Insight uses these variables to auto-add connections on startup.
+      - RI_REDIS_HOST=${CACHE_REDIS_HOST}
+      - RI_REDIS_PORT=${CACHE_REDIS_PORT:-6379}
+      - RI_REDIS_PASSWORD=${CACHE_REDIS_PASSWORD}
+      - RI_REDIS_ALIAS=${CACHE_REDIS_HOST}:${CACHE_REDIS_PORT}
+    depends_on:
+      - redis
+    networks:
+      - nest-network
+    volumes:
+      - redisinsight_data:/db
+    restart: always
+
 volumes:
   postgres_data_dev:
+  redis_data_dev:
+  redisinsight_data:
 
 networks:
   nest-network:

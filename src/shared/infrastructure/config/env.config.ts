@@ -110,6 +110,15 @@ interface EnvConfig {
     ssl?: boolean;
     logQueries: boolean;
   };
+  cache: {
+    redis: {
+      host: string;
+      port: number;
+      password: string;
+      url?: string;
+      ttlDefaultSeconds: number;
+    };
+  };
   cors: {
     origins: string[];
   };
@@ -187,6 +196,13 @@ const envVarsSchema = joi
     DB_SCHEMA: joi.string().default('public'),
     DB_SSL: joi.boolean().default(false),
     DB_LOG_QUERIES: joi.boolean().default(false),
+
+    // Redis / Cache
+    CACHE_REDIS_HOST: joi.string().required(),
+    CACHE_REDIS_PORT: joi.number().default(6379),
+    CACHE_REDIS_PASSWORD: joi.string().required(),
+    CACHE_REDIS_URL: joi.string().uri(),
+    CACHE_TTL_DEFAULT_SECONDS: joi.number().default(3600),
 
     // CORS
     CORS_ORIGINS: joi
@@ -286,6 +302,15 @@ export const envs: EnvConfig = {
     schema: value.DB_SCHEMA,
     ssl: value.DB_SSL,
     logQueries: value.DB_LOG_QUERIES,
+  },
+  cache: {
+    redis: {
+      host: value.CACHE_REDIS_HOST,
+      port: value.CACHE_REDIS_PORT,
+      password: value.CACHE_REDIS_PASSWORD,
+      url: value.CACHE_REDIS_URL,
+      ttlDefaultSeconds: value.CACHE_TTL_DEFAULT_SECONDS,
+    },
   },
   cors: {
     origins: value.CORS_ORIGINS ? value.CORS_ORIGINS.split(',') : ['*'],

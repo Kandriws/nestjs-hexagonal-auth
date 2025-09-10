@@ -1,3 +1,4 @@
+export * from './cache.exception';
 export * from './domain.exception';
 export * from './invalid-email.exception';
 export * from './invalid-name.exception';
