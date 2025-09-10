@@ -24,6 +24,7 @@ import {
   VerifyUserRegistrationDto,
   LoginUserDto,
   RefreshTokenDto,
+  LogoutUserDto,
   VerifyTwoFactorDto,
   ForgotPasswordDto,
   MeResponseDto,
@@ -50,6 +51,7 @@ import {
   ResetPasswordPort,
   VerifyTwoFactorPort,
   VerifyUserRegistrationPort,
+  LogoutUserPort,
 } from 'src/auth/domain/ports/inbound';
 import { ResendRegistrationOtpDto } from '../dtos/resend-registration-otp.dto';
 import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-tokens-response';
@@ -99,6 +101,8 @@ export class AuthController {
     private readonly resetPasswordPort: ResetPasswordPort,
     @Inject(GetCurrentUserPort)
     private readonly getCurrentUserPort: GetCurrentUserPort,
+    @Inject(LogoutUserPort)
+    private readonly logoutPort: LogoutUserPort,
   ) {}
 
   @Get('me')
@@ -124,7 +128,22 @@ export class AuthController {
     });
   }
 
-  @Public()
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Logout (invalidate refresh token)',
+    operationId: 'logout',
+  })
+  @ApiOkDto(SwaggerMessageResponseDto)
+  async logout(
+    @Body() dto: LogoutUserDto,
+  ): Promise<ApiResponse<MessageResponseDto>> {
+    await this.logoutPort.execute(dto.refreshToken);
+    return ResponseFactory.ok<MessageResponseDto>({
+      message: 'Logged out successfully',
+    });
+  }
+
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user', operationId: 'registerUser' })

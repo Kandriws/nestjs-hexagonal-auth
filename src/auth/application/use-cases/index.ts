@@ -14,6 +14,7 @@ export * from './forgot-password.use-case';
 export * from './get-current-user.use-case';
 export * from './login-user.use-case';
 export * from './login-with-google.use-case';
+export * from './logout-user.use-case';
 export * from './refresh-token.use-case';
 export * from './register-user.use-case';
 export * from './resend-registration-otp.use-case';
