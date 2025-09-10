@@ -11,15 +11,15 @@ import {
   RequestMetadata,
   RequestContext,
 } from 'src/shared/infrastructure/decorators/request-metadata.decorator';
-import { LoginWithGooglePort } from 'src/auth/domain/ports/inbound';
+import { OAuthLoginPort } from 'src/auth/domain/ports/inbound';
 import { LoginWithGoogleMapper } from '../mappers';
 
 @ApiTags('Auth')
 @Controller('auth/google')
 export class GoogleAuthController {
   constructor(
-    @Inject(LoginWithGooglePort)
-    private readonly loginWithGooglePort: LoginWithGooglePort,
+    @Inject(OAuthLoginPort)
+    private readonly loginWithGooglePort: OAuthLoginPort,
   ) {}
 
   @Public()

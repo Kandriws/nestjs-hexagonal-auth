@@ -13,7 +13,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(CustomValidationPipe);
   app.useGlobalFilters(new GlobalExceptionsFilter());
-  app.enableCors();
+  app.enableCors({
+    origin: ['*'],
+    methods: 'GET,POST,PUT,PATCH,DELETE',
+    credentials: true,
+  });
   app.use(morgan('dev'));
   app.setGlobalPrefix('api');
 

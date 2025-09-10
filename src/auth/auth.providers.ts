@@ -8,7 +8,7 @@ import {
   VerifyTwoFactorPort,
   ForgotPasswordPort,
   ResetPasswordPort,
-  LoginWithGooglePort,
+  OAuthLoginPort,
   LogoutUserPort,
 } from './domain/ports/inbound';
 import {
@@ -117,7 +117,7 @@ export const useCaseProviders = [
     useClass: ResetPasswordUseCase,
   },
   {
-    provide: LoginWithGooglePort,
+    provide: OAuthLoginPort,
     useClass: LoginWithGoogleUseCase,
   },
 ];

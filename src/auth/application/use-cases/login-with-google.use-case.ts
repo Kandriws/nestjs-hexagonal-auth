@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { LoginWithGooglePort } from 'src/auth/domain/ports/inbound/login-with-google.port';
-import { LoginWithGoogleCommand } from 'src/auth/domain/ports/inbound/commands/login-with-google.command';
+import { OAuthLoginPort } from 'src/auth/domain/ports/inbound/oauth-login.port';
+import { OAuthLoginCommand } from 'src/auth/domain/ports/inbound/commands/oauth-login.command';
 import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-tokens-response';
 import {
   UserRepositoryPort,
@@ -21,7 +21,7 @@ import { User } from 'src/auth/domain/entities/user.entity';
 import { UserId } from 'src/shared/domain/types';
 
 @Injectable()
-export class LoginWithGoogleUseCase implements LoginWithGooglePort {
+export class LoginWithGoogleUseCase implements OAuthLoginPort {
   constructor(
     @Inject(UserRepositoryPort)
     private readonly userRepository: UserRepositoryPort,
@@ -39,7 +39,7 @@ export class LoginWithGoogleUseCase implements LoginWithGooglePort {
     private readonly hasher: HasherPort,
   ) {}
 
-  async execute(command: LoginWithGoogleCommand): Promise<AuthTokensResponse> {
+  async execute(command: OAuthLoginCommand): Promise<AuthTokensResponse> {
     let user = await this.userRepository.findByEmail(command.email.getValue());
 
     if (!user) {
