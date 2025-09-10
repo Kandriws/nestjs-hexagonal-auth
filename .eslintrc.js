@@ -22,4 +22,40 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
   },
+  overrides: [
+    {
+      files: ['src/**/domain/**/*.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['*/infrastructure/**', '*/presentation/**'],
+                message:
+                  'Domain layer should not depend on Infrastructure or Presentation layers.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['src/**/application/**/*.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['*/infrastructure/**', '*/presentation/**'],
+                message:
+                  'Application layer should not depend on Infrastructure or Presentation layers.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
 };
