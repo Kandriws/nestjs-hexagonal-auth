@@ -138,7 +138,7 @@ You can view these files locally from the `docs/` folder or on GitHub by navigat
 
 ## 📄 License
 
-This project is UNLICENSED - see the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT** License. See [LICENSE](LICENSE) for details.
 
 ## 👤 Author
 

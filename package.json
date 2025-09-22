@@ -2,9 +2,9 @@
   "name": "app",
   "version": "0.0.1",
   "description": "",
-  "author": "Kewin Caviedes <kewin.caviedes@gmail.com> (https://www.linkedin.com/in/kewin-caviedes/)",
+  "author": "Kewin Caviedes <kewin_live2@hotmail.com> (https://www.linkedin.com/in/kewin-caviedes/)",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
