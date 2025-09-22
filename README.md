@@ -116,6 +116,17 @@ How to use Swagger UI
 - `POST /auth/refresh` - Refresh token
 - `GET /auth/me` - Get current user
 
+## 📖 Project Documentation
+
+Detailed design notes and learning materials live in the repository `docs/` folder. If you want to understand the architecture choices, conventions, and security guidance, start with the files below or open the `docs/` folder in your editor.
+
+- Hexagonal architecture overview: [docs/hexagonal-architecture.md](docs/hexagonal-architecture.md)
+- Good practices: [docs/good-practices/](docs/good-practices/)
+	- Entities and VO conventions: [docs/good-practices/entities-and-vo-conventions.md](docs/good-practices/entities-and-vo-conventions.md) (GitHub: http://github.com/Kandriws/nestjs-hexagonal-auth/blob/main/docs/good-practices/entities-and-vo-conventions.md)
+	- Security / Login rate limiting: [docs/security/login-rate-limiting.md](docs/security/login-rate-limiting.md)
+
+You can view these files locally from the `docs/` folder or on GitHub by navigating to the same paths in the repository.
+
 ## 🤝 Contributing
 
 1. Fork the repository
