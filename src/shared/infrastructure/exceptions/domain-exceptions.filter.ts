@@ -8,8 +8,12 @@ export class DomainExceptionsFilter implements ExceptionFilter {
   catch(exception: DomainException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const status = exception.statusCode;
+    const message = exception.message;
+    const code = exception.code;
+
     response
-      .status(exception.statusCode)
-      .json(ResponseFactory.error(exception.message));
+      .status(status)
+      .json(ResponseFactory.error(message, undefined, code));
   }
 }

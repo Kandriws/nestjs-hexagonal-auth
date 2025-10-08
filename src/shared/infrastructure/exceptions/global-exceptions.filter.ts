@@ -14,9 +14,10 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
+    let data: any = undefined;
+    let code: string | undefined = undefined;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -27,7 +28,7 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
       } else if (res && typeof res === 'object') {
         if (Array.isArray((res as any).message)) {
           message = 'Validation error';
-          const data = (res as any).message as string[];
+          data = (res as any).message as string[];
           response.status(status).json(ResponseFactory.error(message, data));
           return;
         } else if ((res as any).message) {
@@ -37,16 +38,22 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
         } else {
           message = exception.message || exception.name;
         }
+
+        if ((res as any).code) {
+          code = (res as any).code;
+        }
       } else {
         message = exception.message || exception.name;
       }
     } else if (exception instanceof DomainException) {
       status = exception.statusCode;
       message = exception.message;
+      code = exception.code;
     } else if (exception && exception.message) {
       message = exception.message;
+      if ((exception as any).code) code = (exception as any).code;
     }
 
-    response.status(status).json(ResponseFactory.error(message));
+    response.status(status).json(ResponseFactory.error(message, data, code));
   }
 }

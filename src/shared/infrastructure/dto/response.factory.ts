@@ -34,13 +34,24 @@ export class ResponseFactory {
     };
   }
 
-  static error<T = null>(message: string, data?: T): ApiResponse<T | null> {
+  static error<T = null>(
+    message: string,
+    data?: T,
+    code?: string,
+  ): ApiResponse<T | null> {
     const payload: any = {
       success: false,
       message,
       data: data ?? undefined,
       timestamp: new Date().toISOString(),
     };
+    if (code) {
+      payload.code = code;
+    } else if (data && typeof data === 'object' && (data as any).code) {
+      // Backwards-compat: extract code from data object if caller embedded it.
+      payload.code = (data as any).code;
+      if (Object.keys(data as any).length === 1) delete payload.data;
+    }
 
     return payload as ApiResponse<T | null>;
   }
