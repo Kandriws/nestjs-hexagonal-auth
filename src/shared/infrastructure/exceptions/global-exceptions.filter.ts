@@ -29,7 +29,11 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
         if (Array.isArray((res as any).message)) {
           message = 'Validation error';
           data = (res as any).message as string[];
-          response.status(status).json(ResponseFactory.error(message, data));
+          response
+            .status(status)
+            .json(
+              ResponseFactory.error(message, data, 'INPUT_VALIDATION_FAILED'),
+            );
           return;
         } else if ((res as any).message) {
           message = (res as any).message;
