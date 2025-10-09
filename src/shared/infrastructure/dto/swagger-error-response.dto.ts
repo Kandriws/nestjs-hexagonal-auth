@@ -13,6 +13,13 @@ export class SwaggerErrorResponseDto {
   })
   code?: string;
 
+  @ApiProperty({
+    description: 'Optional additional data for the error',
+    required: false,
+    type: Object,
+  })
+  data?: any;
+
   @ApiProperty({ example: new Date().toISOString() })
   timestamp: string;
 }

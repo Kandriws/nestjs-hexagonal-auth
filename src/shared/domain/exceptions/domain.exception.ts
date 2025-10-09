@@ -5,6 +5,7 @@ export abstract class DomainException extends Error {
     message: string,
     readonly code: string = 'UNKNOWN_ERROR',
     readonly statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+    readonly data?: any[],
   ) {
     super(message);
     this.name = this.constructor.name;

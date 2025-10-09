@@ -11,53 +11,84 @@ import { DomainException } from '../../domain/exceptions/domain.exception';
 
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
-    let data: any = undefined;
-    let code: string | undefined = undefined;
+    let data: any;
+    let code: string | undefined;
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus();
-      const res = exception.getResponse();
+      return this.handleHttpException(exception, response);
+    }
 
-      if (typeof res === 'string') {
-        message = res;
-      } else if (res && typeof res === 'object') {
-        if (Array.isArray((res as any).message)) {
-          message = 'Validation error';
-          data = (res as any).message as string[];
-          response
-            .status(status)
-            .json(
-              ResponseFactory.error(message, data, 'INPUT_VALIDATION_FAILED'),
-            );
-          return;
-        } else if ((res as any).message) {
-          message = (res as any).message;
-        } else if ((res as any).error) {
-          message = (res as any).error;
-        } else {
-          message = exception.message || exception.name;
-        }
-
-        if ((res as any).code) {
-          code = (res as any).code;
-        }
-      } else {
-        message = exception.message || exception.name;
-      }
-    } else if (exception instanceof DomainException) {
-      status = exception.statusCode;
-      message = exception.message;
-      code = exception.code;
-    } else if (exception && exception.message) {
-      message = exception.message;
-      if ((exception as any).code) code = (exception as any).code;
+    if (exception instanceof DomainException) {
+      ({ status, message, code, data } = this.handleDomainException(exception));
+    } else if (this.isGenericError(exception)) {
+      ({ message, code } = this.handleGenericError(
+        exception as Error & { code?: string },
+      ));
     }
 
     response.status(status).json(ResponseFactory.error(message, data, code));
+  }
+
+  private handleHttpException(exception: HttpException, response: Response) {
+    const status = exception.getStatus();
+    const res = exception.getResponse();
+    let message = exception.message || exception.name;
+    let data: any;
+    let code: string | undefined;
+
+    if (typeof res === 'string') {
+      message = res;
+    } else if (typeof res === 'object' && res !== null) {
+      const resObj = res as Record<string, any>;
+
+      if (Array.isArray(resObj.message)) {
+        return response
+          .status(status)
+          .json(
+            ResponseFactory.error(
+              'Validation error',
+              resObj.message,
+              'INPUT_VALIDATION_FAILED',
+            ),
+          );
+      }
+
+      message = resObj.message ?? resObj.error ?? message;
+      code = resObj.code;
+    }
+
+    response.status(status).json(ResponseFactory.error(message, data, code));
+  }
+
+  private handleDomainException(exception: DomainException) {
+    return {
+      status: exception.statusCode,
+      message: exception.message,
+      code: exception.code,
+      data: (exception as any).data,
+    };
+  }
+
+  private handleGenericError(exception: Error & { code?: string }) {
+    return {
+      message: exception.message,
+      code: exception.code,
+    };
+  }
+
+  private isGenericError(
+    exception: unknown,
+  ): exception is Error & { code?: string } {
+    return (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'message' in exception
+    );
   }
 }

@@ -165,6 +165,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login a user', operationId: 'loginUser' })
   @ApiOkDto(SwaggerAuthTokensResponseDto)
+  @ApiBadRequest()
   @ApiUnauthorized()
   async login(
     @Body() dto: LoginUserDto,

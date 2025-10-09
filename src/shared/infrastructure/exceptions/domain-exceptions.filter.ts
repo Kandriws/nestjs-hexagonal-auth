@@ -11,9 +11,8 @@ export class DomainExceptionsFilter implements ExceptionFilter {
     const status = exception.statusCode;
     const message = exception.message;
     const code = exception.code;
+    const data = (exception as any).data;
 
-    response
-      .status(status)
-      .json(ResponseFactory.error(message, undefined, code));
+    response.status(status).json(ResponseFactory.error(message, data, code));
   }
 }

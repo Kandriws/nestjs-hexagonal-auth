@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Token } from 'src/auth/domain/entities';
+import { Token, TwoFactorSetting } from 'src/auth/domain/entities';
 import { OtpChannel, OtpPurpose, TokenType } from 'src/auth/domain/enums';
 import { AccessToken, RefreshToken } from 'src/shared/domain/types';
 import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-tokens-response';
@@ -124,9 +124,8 @@ export class LoginUserUseCase implements LoginUserPort {
   private async handleTwoFactorAuthentication(
     user: any,
     command: LoginUserCommand,
-    twoFactorSettingRecord: any,
+    twoFactorSettingRecord: TwoFactorSetting,
   ): Promise<void> {
-    // If OTP is required but not provided -> send OTP when notifyable, otherwise ask for TOTP
     if (!command.otpCode) {
       if (twoFactorSettingRecord.isMethodNotifyable()) {
         const purpose: OtpPurpose = OtpPurpose.TWO_FACTOR_AUTHENTICATION;
@@ -139,11 +138,21 @@ export class LoginUserUseCase implements LoginUserPort {
 
         throw new OtpCodeRequiredException(
           `Two-factor authentication is required. Please check your ${twoFactorSettingRecord.parseTwoFactorMethodToOtpChannel()} for the OTP code.`,
+          [
+            {
+              method: twoFactorSettingRecord.method,
+            },
+          ],
         );
       }
 
       throw new OtpCodeRequiredException(
         `Two-factor authentication is required. Please check your authenticator app for the OTP code.`,
+        [
+          {
+            method: twoFactorSettingRecord.method,
+          },
+        ],
       );
     }
 
