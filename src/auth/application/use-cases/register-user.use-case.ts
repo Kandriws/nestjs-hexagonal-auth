@@ -32,7 +32,18 @@ export class RegisterUserUseCase implements RegisterUserPort {
     const existingUser = await this.userRepository.findByEmail(email);
 
     if (existingUser) {
-      throw new UserAlreadyExistsException();
+      if (existingUser.isVerified()) {
+        throw new UserAlreadyExistsException();
+      }
+
+      existingUser.updateFirstName(command.firstName.getValue());
+      existingUser.updateLastName(command.lastName.getValue());
+      existingUser.updatePassword(
+        await this.hasher.hash(command.password.getValue()),
+      );
+      await this.userRepository.save(existingUser);
+      await this.sendVerificationEmail(existingUser);
+      return;
     }
 
     const user = User.create({
@@ -42,10 +53,15 @@ export class RegisterUserUseCase implements RegisterUserPort {
       firstName: command.firstName.getValue(),
       lastName: command.lastName.getValue(),
     });
+    await this.userRepository.save(user);
+    await this.sendVerificationEmail(user);
+  }
+
+  async sendVerificationEmail(user: User): Promise<void> {
+    const email = user.email.getValue();
     const channel: OtpChannel = OtpChannel.EMAIL;
     const purpose: OtpPurpose = OtpPurpose.EMAIL_VERIFICATION;
 
-    await this.userRepository.save(user);
     await this.otpSender.sendOtp({
       userId: user.id,
       contact: email,

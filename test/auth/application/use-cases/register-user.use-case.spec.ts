@@ -21,12 +21,14 @@ describe('RegisterUserUseCase', () => {
   let useCase: RegisterUserUseCase;
   let userRepository: jest.Mocked<UserRepositoryPort>;
   let uuidService: jest.Mocked<UUIDPort>;
+  let otpSender: jest.Mocked<OtpSenderPort>;
+  let hasher: jest.Mocked<HasherPort>;
 
   const mockUserId = '123e4567-e89b-12d3-a456-426614174000' as UserId;
   const mockUser = {
     id: mockUserId,
     email: 'test@example.com',
-    password: 'hashedPassword123!',
+    password: 'HashedPassword123!',
     firstName: 'John',
     lastName: 'Doe',
   };
@@ -90,6 +92,8 @@ describe('RegisterUserUseCase', () => {
     useCase = module.get<RegisterUserUseCase>(RegisterUserUseCase);
     userRepository = module.get(UserRepositoryPort);
     uuidService = module.get(UUIDPort);
+    hasher = module.get(HasherPort);
+    otpSender = module.get(OtpSenderPort);
   });
 
   describe('execute', () => {
@@ -154,6 +158,61 @@ describe('RegisterUserUseCase', () => {
       );
       expect(uuidService.generate).not.toHaveBeenCalled();
       expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should update existing unverified user and resend verification OTP', async () => {
+      const existingUser: any = {
+        id: mockUserId,
+        email: EmailVo.of(mockUser.email),
+        password: PasswordVo.of(mockUser.password),
+        firstName: NameVo.of(mockUser.firstName),
+        lastName: NameVo.of(mockUser.lastName),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isVerified: () => false,
+        updateFirstName: jest.fn(function (newName: string) {
+          this.firstName = NameVo.of(newName);
+        }),
+        updateLastName: jest.fn(function (newName: string) {
+          this.lastName = NameVo.of(newName);
+        }),
+        updatePassword: jest.fn(function (newPassword: string) {
+          this.password = PasswordVo.of(newPassword);
+        }),
+      };
+
+      userRepository.findByEmail.mockResolvedValue(existingUser);
+      const newHashed = 'newHashedPassword1!';
+      hasher.hash.mockResolvedValue(newHashed);
+      userRepository.save.mockResolvedValue(undefined);
+
+      // Act
+      await useCase.execute(validCommand);
+
+      // Assert
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(
+        validCommand.email.getValue(),
+      );
+      expect(hasher.hash).toHaveBeenCalledWith(
+        validCommand.password.getValue(),
+      );
+      // should update fields on existing user
+      expect(existingUser.updateFirstName).toHaveBeenCalledWith(
+        validCommand.firstName.getValue(),
+      );
+      expect(existingUser.updateLastName).toHaveBeenCalledWith(
+        validCommand.lastName.getValue(),
+      );
+      expect(existingUser.updatePassword).toHaveBeenCalled();
+
+      expect(userRepository.save).toHaveBeenCalledWith(existingUser);
+
+      expect(otpSender.sendOtp).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: mockUserId,
+          contact: validCommand.email.getValue(),
+        }),
+      );
     });
 
     it('should propagate repository errors when findByEmail fails', async () => {

@@ -74,6 +74,16 @@ export class User {
     this.snap.updatedAt = new Date();
   }
 
+  updateFirstName(newFirstName: string): void {
+    this.snap.firstName = NameVo.of(newFirstName);
+    this.snap.updatedAt = new Date();
+  }
+
+  updateLastName(newLastName: string): void {
+    this.snap.lastName = NameVo.of(newLastName);
+    this.snap.updatedAt = new Date();
+  }
+
   equals(other: User): boolean {
     return other instanceof User && other.id === this.id;
   }
