@@ -145,7 +145,16 @@ describe('RegisterUserUseCase', () => {
 
     it('should throw error when user already exists', async () => {
       // Arrange
-      const existingUser = User.create(mockUser);
+      const existingUser = User.reconstitute({
+        id: mockUserId,
+        email: EmailVo.of(mockUser.email),
+        password: PasswordVo.of(mockUser.password),
+        firstName: NameVo.of(mockUser.firstName),
+        lastName: NameVo.of(mockUser.lastName),
+        verifiedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
       userRepository.findByEmail.mockResolvedValue(existingUser);
 
       // Act & Assert

@@ -11,6 +11,7 @@ import { Token } from 'src/auth/domain/entities';
 import { TokenType } from 'src/auth/domain/enums';
 import {
   InvalidTokenPayloadException,
+  TokenAlreadyConsumedException,
   TokenNotFoundException,
 } from 'src/auth/domain/exceptions';
 import { User } from 'src/auth/domain/entities';
@@ -145,7 +146,7 @@ describe('RefreshTokenUseCase', () => {
       getExpiresAt: () => nowExpires,
     } as any);
 
-    mockTokenRepo.save.mockResolvedValue(undefined as any);
+    mockTokenRepo.rotateToken.mockResolvedValue(true);
 
     const res = await useCase.execute({
       refreshToken: asRefreshToken('rt'),
@@ -164,5 +165,43 @@ describe('RefreshTokenUseCase', () => {
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
     });
+  });
+
+  it('throws TokenAlreadyConsumedException when rotateToken fails due to race condition', async () => {
+    const oldJti = 'old-jti';
+
+    mockTokenProvider.validate.mockResolvedValue({
+      getJti: () => oldJti,
+      isValid: () => true,
+    } as any);
+
+    mockTokenRepo.findByTokenId.mockResolvedValue({
+      id: oldJti,
+      userId,
+      isConsumed: () => false,
+    } as any);
+
+    const user = User.create({
+      id: userId,
+      email: userEmail,
+      password: 'ValidPass123!',
+      firstName: 'First',
+      lastName: 'Last',
+    });
+    mockUserRepo.findById.mockResolvedValue(user as any);
+    mockUuid.generate.mockReturnValue('new-jti');
+    mockTokenProvider.generate.mockResolvedValue('token');
+    mockTokenProvider.decode.mockResolvedValue({
+      getExpiresAt: () => new Date(Date.now() + 60_000),
+    } as any);
+    mockTokenRepo.rotateToken.mockResolvedValue(false);
+
+    await expect(
+      useCase.execute({
+        refreshToken: asRefreshToken('rt'),
+        ipAddress: '1.2.3.4',
+        userAgent: 'agent',
+      }),
+    ).rejects.toThrow(TokenAlreadyConsumedException);
   });
 });

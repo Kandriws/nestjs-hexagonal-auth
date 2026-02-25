@@ -121,6 +121,7 @@ describe('LoginUserUseCase', () => {
     } as any);
 
     mockUserRepo.findByEmail.mockResolvedValue(user);
+    mockHasher.compare.mockResolvedValue(true);
     // Ensure the user is treated as unverified regardless of snapshot shape
     (user as any).isVerified = () => false;
 
@@ -139,6 +140,40 @@ describe('LoginUserUseCase', () => {
       channel: expect.anything(),
       purpose: expect.anything(),
     });
+  });
+
+  it('does not send verification OTP when password is invalid for an unverified user', async () => {
+    const now = new Date();
+    const user = User.reconstitute({
+      id: userId,
+      email: EmailVo.of(userEmail),
+      password: PasswordVo.of('hashedPassword123!'),
+      firstName: NameVo.of('First'),
+      lastName: NameVo.of('Last'),
+      createdAt: now,
+      updatedAt: now,
+      verifiedAt: null,
+    } as any);
+
+    mockUserRepo.findByEmail.mockResolvedValue(user);
+    (user as any).isVerified = () => false;
+    mockHasher.compare.mockResolvedValue(false);
+    mockRateLimit.hit.mockResolvedValue({
+      attempts: 1,
+      remainingAttempts: 2,
+      remainingMinutes: 5,
+    });
+
+    await expect(
+      useCase.execute({
+        email: EmailVo.of(userEmail),
+        password: PasswordVo.of(password),
+        ipAddress: '1.2.3.4',
+        userAgent: 'agent',
+      }),
+    ).rejects.toThrow(InvalidCredentialsException);
+
+    expect(mockOtpSender.sendOtp).not.toHaveBeenCalled();
   });
 
   it('increments rate limit and throws InvalidCredentialsException when password invalid', async () => {
@@ -178,6 +213,7 @@ describe('LoginUserUseCase', () => {
       firstName: 'First',
       lastName: 'Last',
     });
+    user.markAsVerified();
 
     mockUserRepo.findByEmail.mockResolvedValue(user);
     mockHasher.compare.mockResolvedValue(true);
@@ -219,8 +255,10 @@ describe('LoginUserUseCase', () => {
       firstName: 'First',
       lastName: 'Last',
     });
+    user.markAsVerified();
 
     mockUserRepo.findByEmail.mockResolvedValue(user);
+    mockHasher.compare.mockResolvedValue(true);
     // Two-factor required and notifyable
     mockTwoFactorSettingRepo.findByUserId.mockResolvedValue({
       isVerificationNeeded: () => true,
@@ -253,8 +291,10 @@ describe('LoginUserUseCase', () => {
       firstName: 'First',
       lastName: 'Last',
     });
+    user.markAsVerified();
 
     mockUserRepo.findByEmail.mockResolvedValue(user);
+    mockHasher.compare.mockResolvedValue(true);
     mockTwoFactorSettingRepo.findByUserId.mockResolvedValue({
       isVerificationNeeded: () => true,
       isMethodNotifyable: () => false,
@@ -291,6 +331,7 @@ describe('LoginUserUseCase', () => {
       firstName: 'First',
       lastName: 'Last',
     });
+    user.markAsVerified();
 
     mockUserRepo.findByEmail.mockResolvedValue(user);
     mockTwoFactorSettingRepo.findByUserId.mockResolvedValue({

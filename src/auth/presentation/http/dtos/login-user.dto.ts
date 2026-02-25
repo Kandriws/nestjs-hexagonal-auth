@@ -20,7 +20,6 @@ export class LoginUserDto {
   email: string;
 
   @IsStrongPassword(strongPasswordOptions)
-  @IsStrongPassword(strongPasswordOptions)
   @ApiProperty({
     description:
       'Password policy: minimum 8 characters, at least 1 lowercase, 1 uppercase, 1 number and 1 symbol',

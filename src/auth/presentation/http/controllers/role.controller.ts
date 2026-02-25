@@ -49,6 +49,7 @@ import {
 } from '../mappers';
 import { AssignRolePermissionsDto } from '../dtos';
 import { AssignRolePermissionsPort } from 'src/auth/domain/ports/inbound';
+import { Permissions } from 'src/auth/infrastructure/decorators';
 
 @ApiTags('Roles')
 @ApiExtraModels(
@@ -57,6 +58,7 @@ import { AssignRolePermissionsPort } from 'src/auth/domain/ports/inbound';
   SwaggerErrorResponseDto,
 )
 @ApiBearerAuth()
+@Permissions('roles.manage')
 @Controller('roles')
 export class RoleController {
   constructor(

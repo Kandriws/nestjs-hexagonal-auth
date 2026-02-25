@@ -73,6 +73,21 @@ export class LoginUserUseCase implements LoginUserPort {
       throw new InvalidCredentialsException();
     }
 
+    const isValid = await this.hasher.compare(
+      command.password.getValue(),
+      user.password.getValue(),
+    );
+
+    if (!isValid) {
+      const rateLimitInfo: RateLimitInfo = await this.loginRateLimit.hit(
+        user.id,
+      );
+
+      throw new InvalidCredentialsException(
+        `Invalid credentials. Attempts: ${rateLimitInfo.attempts}, remaining: ${rateLimitInfo.remainingAttempts}`,
+      );
+    }
+
     if (!user.isVerified()) {
       const channel: OtpChannel = OtpChannel.EMAIL;
       const purpose: OtpPurpose = OtpPurpose.EMAIL_VERIFICATION;
@@ -99,21 +114,6 @@ export class LoginUserUseCase implements LoginUserPort {
         user,
         command,
         twoFactorSettingRecord,
-      );
-    }
-
-    const isValid = await this.hasher.compare(
-      command.password.getValue(),
-      user.password.getValue(),
-    );
-
-    if (!isValid) {
-      const rateLimitInfo: RateLimitInfo = await this.loginRateLimit.hit(
-        user.id,
-      );
-
-      throw new InvalidCredentialsException(
-        `Invalid credentials. Attempts: ${rateLimitInfo.attempts}, remaining: ${rateLimitInfo.remainingAttempts}`,
       );
     }
 

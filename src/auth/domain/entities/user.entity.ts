@@ -21,6 +21,7 @@ export class User {
       password: PasswordVo.of(props.password),
       firstName: NameVo.of(props.firstName),
       lastName: NameVo.of(props.lastName),
+      verifiedAt: null,
       createdAt: now,
       updatedAt: now,
     });

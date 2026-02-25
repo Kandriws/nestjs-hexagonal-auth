@@ -62,7 +62,7 @@ export class ResetPasswordUseCase implements ResetPasswordPort {
       throw new UserNotFoundException();
     }
 
-    if (!user.isVerified) {
+    if (!user.isVerified()) {
       user.markAsVerified();
     }
 

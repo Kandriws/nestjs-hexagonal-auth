@@ -5,6 +5,7 @@ import {
   IsStrongPassword,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Match } from 'src/shared/infrastructure/decorators';
 
 const strongPasswordOptions = {
   minLength: 8,
@@ -30,6 +31,7 @@ export class RegisterUserDto {
   password: string;
 
   @IsStrongPassword(strongPasswordOptions)
+  @Match('password', { message: 'confirmPassword must match password' })
   @ApiProperty({
     description: 'Repeat password (must match password)',
     minLength: 8,

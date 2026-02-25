@@ -218,15 +218,15 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Post('refresh-token')
-  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Refresh authentication tokens',
     operationId: 'refreshToken',
   })
   @ApiOkDto(SwaggerAuthTokensResponseDto)
-  @ApiUnauthorized()
+  @ApiBadRequest()
   async refreshToken(
     @Body() dto: RefreshTokenDto,
     @RequestMetadata() requestContext: RequestContext,

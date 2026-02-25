@@ -5,6 +5,7 @@ import {
   InvalidTokenPayloadException,
   TokenAlreadyConsumedException,
   TokenNotFoundException,
+  UserNotFoundException,
 } from 'src/auth/domain/exceptions';
 import { RefreshTokenPort } from 'src/auth/domain/ports/inbound';
 import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-tokens-response';
@@ -64,7 +65,11 @@ export class RefreshTokenUseCase implements RefreshTokenPort {
     if (tokenRecord.isConsumed && tokenRecord.isConsumed()) {
       throw new TokenAlreadyConsumedException();
     }
+
     const user = await this.userRepository.findById(tokenRecord.userId);
+    if (!user) {
+      throw new UserNotFoundException();
+    }
 
     const newTokenId = this.uuid.generate();
 
@@ -95,7 +100,13 @@ export class RefreshTokenUseCase implements RefreshTokenPort {
       },
     });
 
-    await this.tokenRepository.rotateToken(tokenId, newToken);
+    const wasRotated = await this.tokenRepository.rotateToken(
+      tokenId,
+      newToken,
+    );
+    if (!wasRotated) {
+      throw new TokenAlreadyConsumedException();
+    }
 
     return {
       accessToken: newAccessToken as AccessToken,

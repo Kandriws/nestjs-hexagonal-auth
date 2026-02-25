@@ -6,6 +6,7 @@ import { setupSwagger } from './shared/infrastructure/config/swagger.config';
 import * as morgan from 'morgan';
 import helmet from 'helmet';
 import { envs } from './shared/infrastructure/config/env.config';
+import { corsConfig } from './shared/infrastructure/config/cors.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,16 +14,12 @@ async function bootstrap() {
   app.use(helmet());
   app.useGlobalPipes(CustomValidationPipe);
   app.useGlobalFilters(new GlobalExceptionsFilter());
-  app.enableCors({
-    origin: ['*'],
-    methods: 'GET,POST,PUT,PATCH,DELETE',
-    credentials: true,
-  });
+  app.enableCors(corsConfig);
   app.use(envs.app.isDevelopment ? morgan('dev') : morgan('combined'));
   app.setGlobalPrefix('api');
 
   setupSwagger(app);
 
-  await app.listen(3000);
+  await app.listen(envs.app.port);
 }
 bootstrap();

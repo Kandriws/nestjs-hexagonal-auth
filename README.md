@@ -88,6 +88,7 @@ src/
 ```bash
 # Copy and configure
 cp .env.example .env
+cp encryption-keys.example.json encryption-keys.json
 ```
 
 **Required:** `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `MAIL_*`

@@ -44,7 +44,7 @@ describe('ResetPasswordUseCase', () => {
 
     const user: any = {
       id: 'user-1',
-      isVerified: true,
+      isVerified: () => true,
       updatePassword: jest.fn(),
       markAsVerified: jest.fn(),
     };
@@ -81,6 +81,37 @@ describe('ResetPasswordUseCase', () => {
     ).rejects.toThrow(TokenAlreadyConsumedException);
   });
 
+  it('marks user as verified when resetting password for an unverified account', async () => {
+    const token = 'valid-token-2';
+    const tokenId = 'jti-verified';
+    const tokenPayload = { getJti: () => tokenId } as any;
+
+    mockTokenProvider.validate.mockResolvedValue(tokenPayload);
+    mockTokenRepo.findByTokenId.mockResolvedValue({
+      id: tokenId,
+      userId: 'user-1',
+      isConsumed: () => false,
+    } as any);
+    mockTokenRepo.markConsumedIfNotConsumed.mockResolvedValue(true);
+
+    const user: any = {
+      id: 'user-1',
+      isVerified: () => false,
+      updatePassword: jest.fn(),
+      markAsVerified: jest.fn(),
+    };
+
+    mockUserRepo.findById.mockResolvedValue(user);
+    mockHasher.hash.mockResolvedValue('hashed');
+
+    await useCase.execute({
+      token,
+      newPassword: { getValue: () => 'new-pass' } as any,
+    });
+
+    expect(user.markAsVerified).toHaveBeenCalledTimes(1);
+  });
+
   it('should simulate concurrent consumption where second call fails', async () => {
     const token = 'concurrent-token';
     const tokenId = 'jti-3';
@@ -93,7 +124,7 @@ describe('ResetPasswordUseCase', () => {
     };
     const user: any = {
       id: 'user-2',
-      isVerified: true,
+      isVerified: () => true,
       updatePassword: jest.fn(),
       markAsVerified: jest.fn(),
     };

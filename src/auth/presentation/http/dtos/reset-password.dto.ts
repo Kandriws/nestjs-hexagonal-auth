@@ -1,5 +1,6 @@
 import { IsString, IsStrongPassword } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Match } from 'src/shared/infrastructure/decorators';
 
 const strongPasswordOptions = {
   minLength: 8,
@@ -12,7 +13,7 @@ export class ResetPasswordDto {
   @IsString()
   @ApiProperty({ description: 'Password reset token sent via email' })
   token: string;
-  @IsStrongPassword(strongPasswordOptions)
+
   @IsStrongPassword(strongPasswordOptions)
   @ApiProperty({
     description:
@@ -22,7 +23,9 @@ export class ResetPasswordDto {
     example: 'N3wP@ssw0rd!',
   })
   newPassword: string;
+
   @IsStrongPassword(strongPasswordOptions)
+  @Match('newPassword', { message: 'confirmPassword must match newPassword' })
   @ApiProperty({
     description: 'Repeat new password (must match newPassword)',
     minLength: 8,

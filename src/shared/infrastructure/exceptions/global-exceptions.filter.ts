@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ResponseFactory } from '../dto/response.factory';
@@ -11,6 +12,8 @@ import { DomainException } from '../../domain/exceptions/domain.exception';
 
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -76,9 +79,11 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
   }
 
   private handleGenericError(exception: Error & { code?: string }) {
+    this.logger.error(exception.message, exception.stack);
+
     return {
-      message: exception.message,
-      code: exception.code,
+      message: 'Internal server error',
+      code: undefined,
     };
   }
 

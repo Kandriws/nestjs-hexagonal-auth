@@ -9,7 +9,7 @@ export interface UserSnapshotType {
   password: PasswordVo;
   firstName: NameVo;
   lastName: NameVo;
-  verifiedAt?: Date;
+  verifiedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 

@@ -40,6 +40,7 @@ import { AssignUserPermissionsPort } from 'src/auth/domain/ports/inbound/assign-
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
 import { CurrentUser } from 'src/auth/infrastructure/decorators/current-user.decorator';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
+import { Permissions } from 'src/auth/infrastructure/decorators';
 
 @ApiTags('Users')
 @ApiExtraModels(
@@ -64,6 +65,7 @@ export class UserController {
   @ApiOperation({ summary: 'Get all users', operationId: 'findAllUsers' })
   @ApiOkDto(SwaggerUsersResponseDto)
   @ApiUnauthorized()
+  @Permissions('users.read')
   async findAll(): Promise<ApiResponse<any[]>> {
     const users = await this.findUsersPort.execute();
     return ResponseFactory.ok<any[]>({
@@ -83,6 +85,7 @@ export class UserController {
   @ApiBadRequest()
   @ApiUnauthorized()
   @ApiNotFound()
+  @Permissions('users.manage')
   async assignRoles(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() assignDto: AssignUserRolesDto,
@@ -110,6 +113,7 @@ export class UserController {
   @ApiBadRequest()
   @ApiUnauthorized()
   @ApiNotFound()
+  @Permissions('users.manage')
   async assignPermissions(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() assignDto: AssignUserPermissionsDto,

@@ -6,7 +6,7 @@ export interface TokenRepositoryPort {
   findByTokenId(id: string): Promise<Token | null>;
   save(token: Token): Promise<void>;
   deleteByTokenId(id: string): Promise<void>;
-  rotateToken(oldTokenId: string, newToken: Token): Promise<void>;
+  rotateToken(oldTokenId: string, newToken: Token): Promise<boolean>;
   deleteByUserId(userId: UserId): Promise<void>;
   markConsumedIfNotConsumed(id: string): Promise<boolean>;
 }

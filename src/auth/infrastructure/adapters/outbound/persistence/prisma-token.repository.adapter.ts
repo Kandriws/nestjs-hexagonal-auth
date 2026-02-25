@@ -74,16 +74,23 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
     }
   }
 
-  async rotateToken(oldTokenId: string, newToken: Token): Promise<void> {
+  async rotateToken(oldTokenId: string, newToken: Token): Promise<boolean> {
     try {
       const createData = TokenMapper.toPersistence(newToken);
-      await this.prismaService.$transaction([
-        this.prismaService.token.updateMany({
-          where: { id: oldTokenId, consumedAt: null } as any,
-          data: { consumedAt: new Date() } as any,
-        }),
-        this.prismaService.token.create({ data: createData }),
-      ]);
+
+      return await this.prismaService.$transaction(async (tx) => {
+        const updateResult = await tx.token.updateMany({
+          where: { id: oldTokenId, consumedAt: null },
+          data: { consumedAt: new Date() },
+        });
+
+        if (updateResult.count === 0) {
+          return false;
+        }
+
+        await tx.token.create({ data: createData });
+        return true;
+      });
     } catch (error: any) {
       if (error && (error as any).code === 'P2025') {
         throw new TokenNotFoundException();

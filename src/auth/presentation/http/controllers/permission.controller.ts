@@ -46,6 +46,7 @@ import {
   UpdatePermissionDto,
 } from '../dtos';
 import { CreatePermissionMapper, UpdatePermissionMapper } from '../mappers';
+import { Permissions } from 'src/auth/infrastructure/decorators';
 
 @ApiTags('Permissions')
 @ApiExtraModels(
@@ -54,6 +55,7 @@ import { CreatePermissionMapper, UpdatePermissionMapper } from '../mappers';
   SwaggerErrorResponseDto,
 )
 @ApiBearerAuth()
+@Permissions('permissions.manage')
 @Controller('permissions')
 export class PermissionController {
   constructor(
