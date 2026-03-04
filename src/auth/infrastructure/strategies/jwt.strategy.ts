@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(
   private readonly logger = new Logger(JwtStrategy.name);
 
   constructor(@Inject(jwtConfig.KEY) jwtConf: ConfigType<typeof jwtConfig>) {
-    const secret = jwtModuleFactory(TokenType.ACCESS, jwtConf).secret;
+    const secret = String(jwtModuleFactory(TokenType.ACCESS, jwtConf).secret);
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

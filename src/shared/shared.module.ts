@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TerminusModule } from '@nestjs/terminus';
 import mailerConfig from './infrastructure/config/mailer.config';
 import redisConfig from './infrastructure/config/cache.config';
 import { MailerPort } from './domain/ports/outbound/notification/mailer.port';
@@ -9,10 +10,12 @@ import { MjmlTemplateRendererAdapter } from './infrastructure/adapters/outbound/
 import { CachePort } from './domain/ports/outbound/cache/cache.port';
 import appConfig from './infrastructure/config/app.config';
 import { RedisCacheAdapter } from './infrastructure/adapters/outbound/cache/redis-cache.adapter';
+import { PrismaModule } from './infrastructure/prisma/prisma.module';
+import { HealthController } from './infrastructure/controllers/health.controller';
 
 @Global()
 @Module({
-  controllers: [],
+  controllers: [HealthController],
   providers: [
     {
       provide: MailerPort,
@@ -28,6 +31,8 @@ import { RedisCacheAdapter } from './infrastructure/adapters/outbound/cache/redi
     },
   ],
   imports: [
+    TerminusModule,
+    PrismaModule,
     ConfigModule.forFeature(mailerConfig),
     ConfigModule.forFeature(redisConfig),
     ConfigModule.forFeature(appConfig),

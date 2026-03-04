@@ -48,7 +48,6 @@ import {
   JwtTokenProviderAdapter,
   OtpGeneratorAdapter,
   OtplibTotpAdapter,
-  OtpSenderAdapter,
 } from './infrastructure/adapters/outbound/security';
 import {
   OtpPolicyAdapter,
@@ -74,6 +73,7 @@ import {
   LogoutUserUseCase,
 } from './application/use-cases';
 import { FileEncryptionKeyStoreAdapter } from './infrastructure/adapters/outbound/security/file-encryption-key-store.adapter';
+import { SendOtpService } from './application/services';
 
 export const useCaseProviders = [
   {
@@ -156,7 +156,7 @@ export const securityProviders = [
   },
   {
     provide: OtpSenderPort,
-    useClass: OtpSenderAdapter,
+    useClass: SendOtpService,
   },
   {
     provide: TOTPPort,

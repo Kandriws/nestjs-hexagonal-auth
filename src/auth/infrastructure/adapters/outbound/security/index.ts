@@ -3,5 +3,4 @@ export * from './bcrypt-hasher.adapter';
 export * from './crypto-uuid.adapter';
 export * from './jwt-token-provider.adapter';
 export * from './otp-generator.adapter';
-export * from './otp-sender.adapter';
 export * from './otplib-totp.adapter';

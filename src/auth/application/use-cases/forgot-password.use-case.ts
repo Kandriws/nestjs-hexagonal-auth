@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { Token } from 'src/auth/domain/entities';
 import { TokenType } from 'src/auth/domain/enums';
 import {
@@ -17,6 +17,8 @@ import { ResetPasswordNotifierPort } from 'src/auth/domain/ports/outbound/notifi
 import { MailerEmailVo } from 'src/shared/domain/value-objects';
 
 export class ForgotPasswordUseCase implements ForgotPasswordPort {
+  private readonly logger = new Logger(ForgotPasswordUseCase.name);
+
   constructor(
     @Inject(UserRepositoryPort)
     private readonly userRepository: UserRepositoryPort,
@@ -76,6 +78,11 @@ export class ForgotPasswordUseCase implements ForgotPasswordPort {
         },
         name: userFullName || undefined,
       });
-    } catch {}
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email to user ${user.id}: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+    }
   }
 }

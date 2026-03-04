@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { StringValue } from 'ms';
 import { TokenType } from 'src/auth/domain/enums';
 import { InvalidTokenPayloadException } from 'src/auth/domain/exceptions';
 import {
@@ -31,7 +32,10 @@ export class JwtTokenProviderAdapter implements TokenProviderPort {
       email: email.getValue(),
       ...extra,
     };
-    return this.jwtService.signAsync(payload, jwtConfig);
+    return this.jwtService.signAsync(payload, {
+      secret: jwtConfig.secret,
+      expiresIn: jwtConfig.expiresIn as StringValue,
+    });
   }
 
   async validate(
@@ -40,7 +44,9 @@ export class JwtTokenProviderAdapter implements TokenProviderPort {
   ): Promise<Readonly<TokenPayloadVo>> {
     const jwtConfig = this.jwtConfigMapper.of(type);
     try {
-      const payload = await this.jwtService.verifyAsync(token, jwtConfig);
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: jwtConfig.secret,
+      });
       return TokenPayloadVo.of({
         userId: payload.userId,
         email: EmailVo.of(payload.email),

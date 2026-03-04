@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { SharedModule } from './shared/shared.module';
 import { AccessControlGuard, JwtAuthGuard } from './auth/infrastructure/guards';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CorrelationIdMiddleware } from './shared/infrastructure/middleware/correlation-id.middleware';
 
 @Module({
   imports: [
@@ -32,4 +33,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}
