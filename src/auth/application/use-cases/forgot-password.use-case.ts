@@ -1,10 +1,11 @@
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Token } from 'src/auth/domain/entities';
-import { TokenType } from 'src/auth/domain/enums';
+import { AuthEventType, TokenType } from 'src/auth/domain/enums';
 import {
   ForgotPasswordCommand,
   ForgotPasswordPort,
 } from 'src/auth/domain/ports/inbound';
+import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import {
   TokenRepositoryPort,
   UserRepositoryPort,
@@ -14,8 +15,10 @@ import {
   UUIDPort,
 } from 'src/auth/domain/ports/outbound/security';
 import { ResetPasswordNotifierPort } from 'src/auth/domain/ports/outbound/notification/reset-password-notifier.port';
+import { PublishablePasswordResetRequestedEvent } from 'src/auth/domain/types';
 import { MailerEmailVo } from 'src/shared/domain/value-objects';
 
+@Injectable()
 export class ForgotPasswordUseCase implements ForgotPasswordPort {
   private readonly logger = new Logger(ForgotPasswordUseCase.name);
 
@@ -23,13 +26,15 @@ export class ForgotPasswordUseCase implements ForgotPasswordPort {
     @Inject(UserRepositoryPort)
     private readonly userRepository: UserRepositoryPort,
     @Inject(TokenProviderPort)
-    private tokenProvider: TokenProviderPort,
+    private readonly tokenProvider: TokenProviderPort,
     @Inject(TokenRepositoryPort)
-    private tokenRepository: TokenRepositoryPort,
+    private readonly tokenRepository: TokenRepositoryPort,
     @Inject(UUIDPort)
-    private uuidPort: UUIDPort,
+    private readonly uuidPort: UUIDPort,
     @Inject(ResetPasswordNotifierPort)
     private readonly resetNotifier: ResetPasswordNotifierPort,
+    @Inject(EventPublisherPort)
+    private readonly eventPublisher: EventPublisherPort,
   ) {}
 
   async execute(command: ForgotPasswordCommand): Promise<void> {
@@ -59,6 +64,25 @@ export class ForgotPasswordUseCase implements ForgotPasswordPort {
     });
 
     await this.tokenRepository.save(token);
+
+    const event: PublishablePasswordResetRequestedEvent = {
+      eventId: this.uuidPort.generate(),
+      eventType: AuthEventType.PASSWORD_RESET_REQUESTED,
+      eventVersion: 'v1',
+      occurredAt: new Date().toISOString(),
+      producer: 'auth-service',
+      aggregateId: user.id,
+      payload: {
+        userId: user.id,
+        email: user.email.getValue(),
+        resetToken,
+        expiresAt: decodedRefreshToken.getExpiresAt().toISOString(),
+        ipAddress,
+        userAgent,
+      },
+    };
+
+    await this.eventPublisher.publish(event);
 
     try {
       const userFullName = [

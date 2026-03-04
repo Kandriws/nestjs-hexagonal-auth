@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RegisterUserUseCase } from 'src/auth/application/use-cases';
 import { User } from 'src/auth/domain/entities';
 import { RegisterUserCommand } from 'src/auth/domain/ports/inbound';
+import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import { OtpNotificationPort } from 'src/auth/domain/ports/outbound/notification';
 import {
   OtpRepositoryPort,
@@ -23,6 +24,7 @@ describe('RegisterUserUseCase', () => {
   let uuidService: jest.Mocked<UUIDPort>;
   let otpSender: jest.Mocked<OtpSenderPort>;
   let hasher: jest.Mocked<HasherPort>;
+  let eventPublisher: jest.Mocked<EventPublisherPort>;
 
   const mockUserId = '123e4567-e89b-12d3-a456-426614174000' as UserId;
   const mockUser = {
@@ -86,6 +88,12 @@ describe('RegisterUserUseCase', () => {
             sendOtp: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: EventPublisherPort,
+          useValue: {
+            publish: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -94,6 +102,7 @@ describe('RegisterUserUseCase', () => {
     uuidService = module.get(UUIDPort);
     hasher = module.get(HasherPort);
     otpSender = module.get(OtpSenderPort);
+    eventPublisher = module.get(EventPublisherPort);
   });
 
   describe('execute', () => {
@@ -138,6 +147,16 @@ describe('RegisterUserUseCase', () => {
             }),
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
+          }),
+        }),
+      );
+      expect(eventPublisher.publish).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: 'auth.user.registered.v1',
+          aggregateId: mockUserId,
+          payload: expect.objectContaining({
+            userId: mockUserId,
+            email: validCommand.email.getValue(),
           }),
         }),
       );

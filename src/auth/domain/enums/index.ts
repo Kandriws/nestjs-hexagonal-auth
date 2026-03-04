@@ -1,3 +1,4 @@
+export * from './auth-event-type.enum';
 export * from './enable-two-factor-decision.enum';
 export * from './otp-channel.enum';
 export * from './otp-purpose.enum';

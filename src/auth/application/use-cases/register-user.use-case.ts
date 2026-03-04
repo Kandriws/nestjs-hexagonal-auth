@@ -1,17 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from 'src/auth/domain/entities/user.entity';
-import { OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
+import { AuthEventType, OtpChannel, OtpPurpose } from 'src/auth/domain/enums';
 import { UserAlreadyExistsException } from 'src/auth/domain/exceptions';
 import {
   RegisterUserCommand,
   RegisterUserPort,
 } from 'src/auth/domain/ports/inbound';
+import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
 import {
   HasherPort,
   OtpSenderPort,
 } from 'src/auth/domain/ports/outbound/security';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security/uuid.port';
+import { PublishableUserRegisteredEvent } from 'src/auth/domain/types';
 import { UserId } from 'src/shared/domain/types';
 
 @Injectable()
@@ -25,6 +27,8 @@ export class RegisterUserUseCase implements RegisterUserPort {
     private readonly hasher: HasherPort,
     @Inject(OtpSenderPort)
     private readonly otpSender: OtpSenderPort,
+    @Inject(EventPublisherPort)
+    private readonly eventPublisher: EventPublisherPort,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<void> {
@@ -55,6 +59,26 @@ export class RegisterUserUseCase implements RegisterUserPort {
     });
     await this.userRepository.save(user);
     await this.sendVerificationEmail(user);
+    await this.publishUserRegisteredEvent(user);
+  }
+
+  private async publishUserRegisteredEvent(user: User): Promise<void> {
+    const event: PublishableUserRegisteredEvent = {
+      eventId: this.uuid.generate(),
+      eventType: AuthEventType.USER_REGISTERED,
+      eventVersion: 'v1',
+      occurredAt: new Date().toISOString(),
+      producer: 'auth-service',
+      aggregateId: user.id,
+      payload: {
+        userId: user.id,
+        email: user.email.getValue(),
+        firstName: user.firstName?.getValue() ?? '',
+        lastName: user.lastName?.getValue() ?? '',
+      },
+    };
+
+    await this.eventPublisher.publish(event);
   }
 
   async sendVerificationEmail(user: User): Promise<void> {

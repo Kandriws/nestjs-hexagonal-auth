@@ -200,3 +200,30 @@ model UserPermission {
 
   @@unique([userId, permissionId])
 }
+
+// ─── Outbox Pattern ────────────────────────────────────────────
+
+enum OutboxEventStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+}
+
+model OutboxEvent {
+  id            String             @id @default(uuid())
+  eventType     String
+  eventVersion  String             @default("v1")
+  aggregateId   String
+  traceId       String?
+  payloadJson   Json
+  status        OutboxEventStatus  @default(PENDING)
+  attempts      Int                @default(0)
+  nextAttemptAt DateTime?
+  publishedAt   DateTime?
+  errorMessage  String?
+  createdAt     DateTime           @default(now())
+
+  @@index([status, nextAttemptAt])
+  @@index([aggregateId])
+  @@index([eventType])
+}

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthController } from './presentation/http/controllers/auth.controller';
 import { PrismaModule } from 'src/shared/infrastructure/prisma/prisma.module';
 import securityConfig from 'src/shared/infrastructure/config/security.config';
@@ -22,6 +23,7 @@ import userProviders from './user.providers';
 import { GoogleAuthController } from './presentation/http/controllers/google-auth.controller';
 import googleOauthConfig from './infrastructure/config/google-oauth.config';
 import { GoogleStrategy } from './infrastructure/strategies/google-oauth.strategy';
+import { OutboxRelayService } from './infrastructure/adapters/outbound/messaging';
 
 @Module({
   controllers: [
@@ -35,6 +37,7 @@ import { GoogleStrategy } from './infrastructure/strategies/google-oauth.strateg
     JwtTokenConfigMapper,
     JwtStrategy,
     GoogleStrategy,
+    OutboxRelayService,
     ...allAuthProviders,
     ...roleProviders,
     ...permissionProviders,
@@ -44,6 +47,7 @@ import { GoogleStrategy } from './infrastructure/strategies/google-oauth.strateg
     PassportModule,
     PrismaModule,
     SharedModule,
+    ScheduleModule.forRoot(),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync({
       imports: [ConfigModule.forFeature(jwtConfig)],

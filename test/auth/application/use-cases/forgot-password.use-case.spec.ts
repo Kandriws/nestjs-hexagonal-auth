@@ -1,5 +1,6 @@
 import { ForgotPasswordUseCase } from 'src/auth/application/use-cases/forgot-password.use-case';
 import { createMock, createMockUser } from '../../../shared/test-helpers';
+import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence';
 import {
   TokenProviderPort,
@@ -16,6 +17,7 @@ describe('ForgotPasswordUseCase', () => {
   let mockTokenRepo: jest.Mocked<TokenRepositoryPort>;
   let mockUuid: jest.Mocked<UUIDPort>;
   let mockNotifier: jest.Mocked<ResetPasswordNotifierPort>;
+  let mockEventPublisher: jest.Mocked<EventPublisherPort>;
 
   beforeEach(() => {
     mockUserRepo = createMock<UserRepositoryPort>();
@@ -23,6 +25,7 @@ describe('ForgotPasswordUseCase', () => {
     mockTokenRepo = createMock<TokenRepositoryPort>();
     mockUuid = createMock<UUIDPort>();
     mockNotifier = createMock<ResetPasswordNotifierPort>();
+    mockEventPublisher = createMock<EventPublisherPort>();
 
     useCase = new ForgotPasswordUseCase(
       mockUserRepo,
@@ -30,6 +33,7 @@ describe('ForgotPasswordUseCase', () => {
       mockTokenRepo,
       mockUuid,
       mockNotifier,
+      mockEventPublisher,
     );
   });
 
@@ -81,6 +85,17 @@ describe('ForgotPasswordUseCase', () => {
       expect.objectContaining({ jti }),
     );
     expect(mockTokenRepo.save).toHaveBeenCalledWith(expect.anything());
+    expect(mockEventPublisher.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'auth.password.reset.requested.v1',
+        aggregateId: user.id,
+        payload: expect.objectContaining({
+          userId: user.id,
+          email: user.email.getValue(),
+          resetToken: fakeToken,
+        }),
+      }),
+    );
     expect(mockNotifier.sendReset).toHaveBeenCalledWith(
       expect.objectContaining({ token: fakeToken }),
     );

@@ -35,6 +35,7 @@ import {
   OtpNotificationPort,
   ResetPasswordNotifierPort,
 } from './domain/ports/outbound/notification';
+import { EventPublisherPort } from './domain/ports/outbound/messaging';
 
 import {
   PrismaOtpRepositoryAdapter,
@@ -58,6 +59,7 @@ import {
   OtpNotificationSenderAdapter,
   ResetPasswordNotifierAdapter,
 } from './infrastructure/adapters/outbound/notification';
+import { OutboxEventPublisherAdapter } from './infrastructure/adapters/outbound/messaging';
 
 import {
   EnableTwoFactorUseCase,
@@ -198,10 +200,18 @@ export const notificationProviders = [
   },
 ];
 
+export const messagingProviders = [
+  {
+    provide: EventPublisherPort,
+    useClass: OutboxEventPublisherAdapter,
+  },
+];
+
 export const allAuthProviders = [
   ...useCaseProviders,
   ...persistenceProviders,
   ...securityProviders,
   ...policyProviders,
   ...notificationProviders,
+  ...messagingProviders,
 ];

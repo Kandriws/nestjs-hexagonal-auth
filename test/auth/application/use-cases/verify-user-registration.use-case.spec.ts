@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VerifyUserRegistrationUseCase } from 'src/auth/application/use-cases/verify-user-registration.use-case';
+import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import {
   UserRepositoryPort,
   OtpRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
+import { UUIDPort } from 'src/auth/domain/ports/outbound/security';
 import { VerifyUserRegistrationCommand } from 'src/auth/domain/ports/inbound/commands/verify-user-registration.command';
 import { User, Otp } from 'src/auth/domain/entities';
 import { OtpPurpose, OtpChannel } from 'src/auth/domain/enums';
@@ -22,6 +24,7 @@ describe('VerifyUserRegistrationUseCase', () => {
   let useCase: VerifyUserRegistrationUseCase;
   let userRepository: jest.Mocked<UserRepositoryPort>;
   let otpRepository: jest.Mocked<OtpRepositoryPort>;
+  let eventPublisher: jest.Mocked<EventPublisherPort>;
 
   const mockUserId = 'user-123' as UserId;
 
@@ -67,6 +70,18 @@ describe('VerifyUserRegistrationUseCase', () => {
             save: jest.fn(),
           },
         },
+        {
+          provide: UUIDPort,
+          useValue: {
+            generate: jest.fn().mockReturnValue('event-uuid-123'),
+          },
+        },
+        {
+          provide: EventPublisherPort,
+          useValue: {
+            publish: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
@@ -75,6 +90,7 @@ describe('VerifyUserRegistrationUseCase', () => {
     );
     userRepository = module.get(UserRepositoryPort);
     otpRepository = module.get(OtpRepositoryPort);
+    eventPublisher = module.get(EventPublisherPort);
 
     mockUser = createMockUser();
     mockOtp = createMockOtp();
@@ -108,6 +124,16 @@ describe('VerifyUserRegistrationUseCase', () => {
       expect(userRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           verifiedAt: expect.any(Date),
+        }),
+      );
+      expect(eventPublisher.publish).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: 'auth.user.verified.v1',
+          aggregateId: mockUserId,
+          payload: expect.objectContaining({
+            userId: mockUserId,
+            email: 'test@example.com',
+          }),
         }),
       );
     });
