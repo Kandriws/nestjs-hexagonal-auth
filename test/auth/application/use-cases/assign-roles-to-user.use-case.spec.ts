@@ -1,6 +1,7 @@
 import { AssignRolesToUserUseCase } from 'src/auth/application/use-cases/assign-roles-to-user.use-case';
 import { AssignUserRolesCommand } from 'src/auth/domain/ports/inbound/commands/assign-user-roles.command';
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
+import { TransactionManagerPort } from 'src/auth/domain/ports/outbound/persistence';
 import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
 import { RoleRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/role.repository.port';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security';
@@ -17,17 +18,23 @@ describe('AssignRolesToUserUseCase', () => {
   let roleRepository: jest.Mocked<RoleRepositoryPort>;
   let uuid: jest.Mocked<UUIDPort>;
   let eventPublisher: jest.Mocked<EventPublisherPort>;
+  let txManager: jest.Mocked<TransactionManagerPort>;
 
   beforeEach(() => {
     userRepository = createMock<UserRepositoryPort>();
     roleRepository = createMock<RoleRepositoryPort>();
     uuid = createMock<UUIDPort>();
     eventPublisher = createMock<EventPublisherPort>();
+    txManager = createMock<TransactionManagerPort>();
+    txManager.runInTransaction.mockImplementation(async (operation) =>
+      operation(),
+    );
 
     useCase = new AssignRolesToUserUseCase(
       userRepository,
       roleRepository,
       uuid,
+      txManager,
       eventPublisher,
     );
   });

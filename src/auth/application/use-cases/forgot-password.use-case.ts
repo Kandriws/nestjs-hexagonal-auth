@@ -8,6 +8,7 @@ import {
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import {
   TokenRepositoryPort,
+  TransactionManagerPort,
   UserRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
 import {
@@ -33,6 +34,8 @@ export class ForgotPasswordUseCase implements ForgotPasswordPort {
     private readonly uuidPort: UUIDPort,
     @Inject(ResetPasswordNotifierPort)
     private readonly resetNotifier: ResetPasswordNotifierPort,
+    @Inject(TransactionManagerPort)
+    private readonly txManager: TransactionManagerPort,
     @Inject(EventPublisherPort)
     private readonly eventPublisher: EventPublisherPort,
   ) {}
@@ -63,8 +66,6 @@ export class ForgotPasswordUseCase implements ForgotPasswordPort {
       },
     });
 
-    await this.tokenRepository.save(token);
-
     const event: PublishablePasswordResetRequestedEvent = {
       eventId: this.uuidPort.generate(),
       eventType: AuthEventType.PASSWORD_RESET_REQUESTED,
@@ -82,7 +83,10 @@ export class ForgotPasswordUseCase implements ForgotPasswordPort {
       },
     };
 
-    await this.eventPublisher.publish(event);
+    await this.txManager.runInTransaction(async () => {
+      await this.tokenRepository.save(token);
+      await this.eventPublisher.publish(event);
+    });
 
     try {
       const userFullName = [

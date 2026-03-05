@@ -59,12 +59,12 @@ import {
   RequestContext,
   RequestMetadata,
 } from 'src/shared/infrastructure/decorators/request-metadata.decorator';
+import { Public } from 'src/shared/infrastructure/decorators';
 import { GetCurrentUserPort } from 'src/auth/domain/ports/inbound/get-current-user.port';
 import { MeMapper } from '../mappers';
 import { EnableTwoFactorDto } from '../dtos/enable-two-factor.dto';
-import { EnableTwoFactorResponse } from 'src/auth/domain/ports/outbound/commands/enable-two-factor-response';
-import { Public } from 'src/auth/infrastructure/decorators/public.decorator';
-import { CurrentUser } from 'src/auth/infrastructure/decorators/current-user.decorator';
+import { EnableTwoFactorResponse } from 'src/auth/domain/ports/inbound/commands/enable-two-factor-response';
+import { CurrentUser } from '../decorators';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { ResetPasswordMapper } from '../mappers/reset-password.mapper';

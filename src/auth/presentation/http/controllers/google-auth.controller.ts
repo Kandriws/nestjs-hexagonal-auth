@@ -1,9 +1,8 @@
 import { Controller, Get, Inject, Req, UseGuards } from '@nestjs/common';
-import { Public } from 'src/auth/infrastructure/decorators/public.decorator';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthStrategies } from 'src/auth/infrastructure/strategies/strategies.enum';
+import { AuthStrategies } from 'src/auth/constants/auth-strategies.constant';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiOkDto } from 'src/shared/infrastructure/decorators';
+import { ApiOkDto, Public } from 'src/shared/infrastructure/decorators';
 import { SwaggerAuthTokensResponseDto } from 'src/shared/infrastructure/dto/swagger-api-response.dto';
 import { ApiResponse, ResponseFactory } from 'src/shared/infrastructure/dto';
 import { AuthTokensResponse } from 'src/auth/domain/ports/inbound/commands/auth-tokens-response';

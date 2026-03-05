@@ -38,9 +38,8 @@ import { AssignUserPermissionsDto } from '../dtos/assign-user-permissions.dto';
 import { AssignUserPermissionsMapper } from '../mappers/assign-user-permissions.mapper';
 import { AssignUserPermissionsPort } from 'src/auth/domain/ports/inbound/assign-user-permissions.port';
 import { HttpStatus } from 'src/shared/domain/enums/http-status.enum';
-import { CurrentUser } from 'src/auth/infrastructure/decorators/current-user.decorator';
+import { CurrentUser, Permissions } from '../decorators';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
-import { Permissions } from 'src/auth/infrastructure/decorators';
 
 @ApiTags('Users')
 @ApiExtraModels(

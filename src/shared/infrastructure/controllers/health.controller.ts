@@ -5,7 +5,7 @@ import {
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { Public } from 'src/auth/infrastructure/decorators';
+import { Public } from '../decorators';
 import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('Health')

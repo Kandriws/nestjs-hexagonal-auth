@@ -7,7 +7,10 @@ import {
   RegisterUserPort,
 } from 'src/auth/domain/ports/inbound';
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
-import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
+import {
+  TransactionManagerPort,
+  UserRepositoryPort,
+} from 'src/auth/domain/ports/outbound/persistence';
 import {
   HasherPort,
   OtpSenderPort,
@@ -27,6 +30,8 @@ export class RegisterUserUseCase implements RegisterUserPort {
     private readonly hasher: HasherPort,
     @Inject(OtpSenderPort)
     private readonly otpSender: OtpSenderPort,
+    @Inject(TransactionManagerPort)
+    private readonly txManager: TransactionManagerPort,
     @Inject(EventPublisherPort)
     private readonly eventPublisher: EventPublisherPort,
   ) {}
@@ -57,9 +62,13 @@ export class RegisterUserUseCase implements RegisterUserPort {
       firstName: command.firstName.getValue(),
       lastName: command.lastName.getValue(),
     });
-    await this.userRepository.save(user);
+
+    await this.txManager.runInTransaction(async () => {
+      await this.userRepository.save(user);
+      await this.publishUserRegisteredEvent(user);
+    });
+
     await this.sendVerificationEmail(user);
-    await this.publishUserRegisteredEvent(user);
   }
 
   private async publishUserRegisteredEvent(user: User): Promise<void> {

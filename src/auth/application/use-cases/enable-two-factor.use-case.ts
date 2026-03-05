@@ -7,7 +7,7 @@ import {
   UserNotFoundException,
 } from 'src/auth/domain/exceptions';
 import { EnableTwoFactorPort } from 'src/auth/domain/ports/inbound';
-import { EnableTwoFactorResponse } from 'src/auth/domain/ports/outbound/commands/enable-two-factor-response';
+import { EnableTwoFactorResponse } from 'src/auth/domain/ports/inbound/commands/enable-two-factor-response';
 import {
   TwoFactorSettingRepositoryPort,
   UserRepositoryPort,

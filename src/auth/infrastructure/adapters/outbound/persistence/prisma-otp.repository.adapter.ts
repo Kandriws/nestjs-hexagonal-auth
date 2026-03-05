@@ -22,13 +22,16 @@ export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
   async save(otp: Otp): Promise<void> {
     try {
       const data = PrismaOtpMapper.toPersistence(otp);
-      await this.prismaService.otp.upsert({
+      const prisma = this.prismaService.getClient();
+      await prisma.otp.upsert({
         where: { id: data.id },
         create: data,
         update: data,
       });
     } catch (error) {
-      throw new PersistenceInfrastructureException(error.message);
+      throw new PersistenceInfrastructureException(
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 
@@ -36,7 +39,8 @@ export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
     userId: UserId,
     otpCode: OtpCode,
   ): Promise<Otp | null> {
-    const record = await this.prismaService.otp.findFirst({
+    const prisma = this.prismaService.getClient();
+    const record = await prisma.otp.findFirst({
       where: { userId: userId, code: otpCode },
     });
     return record ? PrismaOtpMapper.toDomain(record) : null;
@@ -46,7 +50,8 @@ export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
     userId: UserId,
     purpose: OtpPurpose,
   ): Promise<Otp | null> {
-    const record = await this.prismaService.otp.findFirst({
+    const prisma = this.prismaService.getClient();
+    const record = await prisma.otp.findFirst({
       where: {
         userId,
         purpose: PrismaOtpMapper.convertDomainPurposeToPrisma(purpose),
@@ -61,11 +66,12 @@ export class PrismaOtpRepositoryAdapter implements OtpRepositoryPort {
 
   async delete(otp: Otp): Promise<void> {
     try {
-      await this.prismaService.otp.delete({
+      const prisma = this.prismaService.getClient();
+      await prisma.otp.delete({
         where: { id: otp.id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if ((error as any)?.code === 'P2025') {
         throw new OtpNotFoundException();
       }
 

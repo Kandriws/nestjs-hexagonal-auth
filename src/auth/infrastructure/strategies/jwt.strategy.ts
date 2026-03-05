@@ -3,7 +3,7 @@ import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import jwtConfig from '../config/jwt.config';
-import { AuthStrategies } from './strategies.enum';
+import { AuthStrategies } from 'src/auth/constants/auth-strategies.constant';
 import { InvalidTokenPayloadException } from 'src/auth/domain/exceptions';
 import { jwtModuleFactory } from '../config/jwt-module.factory';
 import { TokenType } from 'src/auth/domain/enums';

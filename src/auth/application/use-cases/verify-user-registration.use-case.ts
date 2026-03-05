@@ -12,6 +12,7 @@ import {
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import {
   OtpRepositoryPort,
+  TransactionManagerPort,
   UserRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security';
@@ -28,6 +29,8 @@ export class VerifyUserRegistrationUseCase
     private readonly otpRepository: OtpRepositoryPort,
     @Inject(UUIDPort)
     private readonly uuid: UUIDPort,
+    @Inject(TransactionManagerPort)
+    private readonly txManager: TransactionManagerPort,
     @Inject(EventPublisherPort)
     private readonly eventPublisher: EventPublisherPort,
   ) {}
@@ -53,9 +56,6 @@ export class VerifyUserRegistrationUseCase
     await otpRecord.markAsUsedFor(OtpPurpose.EMAIL_VERIFICATION);
     user.markAsVerified();
 
-    await this.otpRepository.save(otpRecord);
-    await this.userRepository.save(user);
-
     const event: PublishableUserVerifiedEvent = {
       eventId: this.uuid.generate(),
       eventType: AuthEventType.USER_VERIFIED,
@@ -70,6 +70,10 @@ export class VerifyUserRegistrationUseCase
       },
     };
 
-    await this.eventPublisher.publish(event);
+    await this.txManager.runInTransaction(async () => {
+      await this.otpRepository.save(otpRecord);
+      await this.userRepository.save(user);
+      await this.eventPublisher.publish(event);
+    });
   }
 }

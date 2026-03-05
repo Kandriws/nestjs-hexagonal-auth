@@ -3,7 +3,10 @@ import { AuthEventType } from 'src/auth/domain/enums';
 import { AssignUserRolesCommand } from 'src/auth/domain/ports/inbound/commands/assign-user-roles.command';
 import { AssignUserRolesPort } from 'src/auth/domain/ports/inbound/assign-user-roles.port';
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
-import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/user.repository.port';
+import {
+  TransactionManagerPort,
+  UserRepositoryPort,
+} from 'src/auth/domain/ports/outbound/persistence';
 import { RoleRepositoryPort } from 'src/auth/domain/ports/outbound/persistence/role.repository.port';
 import { UUIDPort } from 'src/auth/domain/ports/outbound/security';
 import {
@@ -22,6 +25,8 @@ export class AssignRolesToUserUseCase implements AssignUserRolesPort {
     private readonly roleRepository: RoleRepositoryPort,
     @Inject(UUIDPort)
     private readonly uuid: UUIDPort,
+    @Inject(TransactionManagerPort)
+    private readonly txManager: TransactionManagerPort,
     @Inject(EventPublisherPort)
     private readonly eventPublisher: EventPublisherPort,
   ) {}
@@ -34,12 +39,6 @@ export class AssignRolesToUserUseCase implements AssignUserRolesPort {
       const role = await this.roleRepository.findById(roleId);
       if (!role) throw new RoleNotFoundException();
     }
-
-    await this.userRepository.assignRoles(
-      command.userId,
-      command.roleIds,
-      command.assignedById ?? null,
-    );
 
     const event: PublishableUserRoleAssignedEvent = {
       eventId: this.uuid.generate(),
@@ -55,6 +54,14 @@ export class AssignRolesToUserUseCase implements AssignUserRolesPort {
       },
     };
 
-    await this.eventPublisher.publish(event);
+    await this.txManager.runInTransaction(async () => {
+      await this.userRepository.assignRoles(
+        command.userId,
+        command.roleIds,
+        command.assignedById ?? null,
+      );
+
+      await this.eventPublisher.publish(event);
+    });
   }
 }

@@ -6,6 +6,7 @@ import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import { OtpNotificationPort } from 'src/auth/domain/ports/outbound/notification';
 import {
   OtpRepositoryPort,
+  TransactionManagerPort,
   UserRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
 import { OtpPolicyPort } from 'src/auth/domain/ports/outbound/policy';
@@ -25,6 +26,7 @@ describe('RegisterUserUseCase', () => {
   let otpSender: jest.Mocked<OtpSenderPort>;
   let hasher: jest.Mocked<HasherPort>;
   let eventPublisher: jest.Mocked<EventPublisherPort>;
+  let txManager: jest.Mocked<TransactionManagerPort>;
 
   const mockUserId = '123e4567-e89b-12d3-a456-426614174000' as UserId;
   const mockUser = {
@@ -94,6 +96,12 @@ describe('RegisterUserUseCase', () => {
             publish: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: TransactionManagerPort,
+          useValue: {
+            runInTransaction: jest.fn(async (operation) => operation()),
+          },
+        },
       ],
     }).compile();
 
@@ -103,6 +111,7 @@ describe('RegisterUserUseCase', () => {
     hasher = module.get(HasherPort);
     otpSender = module.get(OtpSenderPort);
     eventPublisher = module.get(EventPublisherPort);
+    txManager = module.get(TransactionManagerPort);
   });
 
   describe('execute', () => {

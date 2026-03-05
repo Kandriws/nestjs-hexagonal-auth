@@ -4,6 +4,7 @@ export * from './assign-user-roles.port';
 export * from './commands/assign-role-permissions.command';
 export * from './commands/assign-user-permissions.command';
 export * from './commands/assign-user-roles.command';
+export * from './commands/enable-two-factor-response';
 export * from './commands/forgot-password.command';
 export * from './commands/login-user.command';
 export * from './commands/permission.command';

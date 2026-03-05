@@ -46,7 +46,7 @@ import {
   UpdatePermissionDto,
 } from '../dtos';
 import { CreatePermissionMapper, UpdatePermissionMapper } from '../mappers';
-import { Permissions } from 'src/auth/infrastructure/decorators';
+import { Permissions } from '../decorators';
 
 @ApiTags('Permissions')
 @ApiExtraModels(

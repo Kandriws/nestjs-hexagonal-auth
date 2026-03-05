@@ -15,7 +15,8 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
   ) {}
 
   async findById(id: UserId): Promise<User | null> {
-    const user = await this.prismaService.user.findUnique({
+    const prisma = this.prismaService.getClient();
+    const user = await prisma.user.findUnique({
       where: { id },
     });
 
@@ -23,7 +24,8 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
   }
 
   async findByEmail(email: Email): Promise<User | null> {
-    const user = await this.prismaService.user.findUnique({
+    const prisma = this.prismaService.getClient();
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -34,14 +36,16 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
   }
 
   async findAll(): Promise<User[]> {
-    const users = await this.prismaService.user.findMany();
+    const prisma = this.prismaService.getClient();
+    const users = await prisma.user.findMany();
     return users.map(PrismaUserMapper.toDomain);
   }
 
   async save(user: User): Promise<void> {
     const prismaUser = PrismaUserMapper.toPersistence(user);
     try {
-      await this.prismaService.user.upsert({
+      const prisma = this.prismaService.getClient();
+      await prisma.user.upsert({
         where: { id: user.id },
         update: {
           ...prismaUser,
@@ -52,7 +56,7 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
         },
       });
     } catch (error) {
-      if (error && error.code === 'P2002') {
+      if ((error as any)?.code === 'P2002') {
         throw new UserAlreadyExistsException();
       }
 
@@ -68,19 +72,23 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
     assignedById?: string | null,
   ): Promise<void> {
     try {
-      await this.prismaService.userRole.deleteMany({ where: { userId } });
+      await this.prismaService.runInTransaction(async () => {
+        const prisma = this.prismaService.getClient();
 
-      if (!roleIds || roleIds.length === 0) return;
+        await prisma.userRole.deleteMany({ where: { userId } });
 
-      const data = roleIds.map((roleId) => ({
-        userId,
-        roleId,
-        assignedById: assignedById ?? null,
-      }));
+        if (!roleIds || roleIds.length === 0) return;
 
-      await this.prismaService.userRole.createMany({
-        data,
-        skipDuplicates: true,
+        const data = roleIds.map((roleId) => ({
+          userId,
+          roleId,
+          assignedById: assignedById ?? null,
+        }));
+
+        await prisma.userRole.createMany({
+          data,
+          skipDuplicates: true,
+        });
       });
     } catch {
       throw new PersistenceInfrastructureException(
@@ -95,19 +103,23 @@ export class PrismaUserRepositoryAdapter implements UserRepositoryPort {
     assignedById?: string | null,
   ): Promise<void> {
     try {
-      await this.prismaService.userPermission.deleteMany({ where: { userId } });
+      await this.prismaService.runInTransaction(async () => {
+        const prisma = this.prismaService.getClient();
 
-      if (!permissionIds || permissionIds.length === 0) return;
+        await prisma.userPermission.deleteMany({ where: { userId } });
 
-      const data = permissionIds.map((permissionId) => ({
-        userId,
-        permissionId,
-        assignedById: assignedById ?? null,
-      }));
+        if (!permissionIds || permissionIds.length === 0) return;
 
-      await this.prismaService.userPermission.createMany({
-        data,
-        skipDuplicates: true,
+        const data = permissionIds.map((permissionId) => ({
+          userId,
+          permissionId,
+          assignedById: assignedById ?? null,
+        }));
+
+        await prisma.userPermission.createMany({
+          data,
+          skipDuplicates: true,
+        });
       });
     } catch {
       throw new PersistenceInfrastructureException(

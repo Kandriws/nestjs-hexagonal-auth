@@ -23,8 +23,9 @@ export class OutboxEventPublisherAdapter implements EventPublisherPort {
 
   async publish<T>(event: PublishableDomainEvent<T>): Promise<void> {
     const traceId = getCorrelationId();
+    const prisma = this.prisma.getClient();
 
-    await this.prisma.outboxEvent.create({
+    await prisma.outboxEvent.create({
       data: {
         id: event.eventId,
         eventType: event.eventType,

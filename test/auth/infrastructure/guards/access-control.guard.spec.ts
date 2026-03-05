@@ -4,8 +4,10 @@ import { ExecutionContext } from '@nestjs/common';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
 import { EmailVo } from 'src/shared/domain/value-objects';
 import { UserId } from 'src/shared/domain/types';
-import { ROLES_KEY } from 'src/auth/infrastructure/decorators/roles.decorator';
-import { PERMISSIONS_KEY } from 'src/auth/infrastructure/decorators/permissions.decorator';
+import {
+  PERMISSIONS_KEY,
+  ROLES_KEY,
+} from 'src/auth/constants/auth-metadata-keys.constant';
 
 // Helper to build a TokenPayloadVo quickly
 function asUserId(id: string): UserId {

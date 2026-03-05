@@ -1,6 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY, ROLES_KEY } from '../decorators';
+import {
+  PERMISSIONS_KEY,
+  ROLES_KEY,
+} from 'src/auth/constants/auth-metadata-keys.constant';
 import { TokenPayloadVo } from 'src/auth/domain/value-objects';
 
 @Injectable()

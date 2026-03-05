@@ -1,7 +1,10 @@
 import { ForgotPasswordUseCase } from 'src/auth/application/use-cases/forgot-password.use-case';
 import { createMock, createMockUser } from '../../../shared/test-helpers';
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
-import { UserRepositoryPort } from 'src/auth/domain/ports/outbound/persistence';
+import {
+  TransactionManagerPort,
+  UserRepositoryPort,
+} from 'src/auth/domain/ports/outbound/persistence';
 import {
   TokenProviderPort,
   UUIDPort,
@@ -18,6 +21,7 @@ describe('ForgotPasswordUseCase', () => {
   let mockUuid: jest.Mocked<UUIDPort>;
   let mockNotifier: jest.Mocked<ResetPasswordNotifierPort>;
   let mockEventPublisher: jest.Mocked<EventPublisherPort>;
+  let mockTxManager: jest.Mocked<TransactionManagerPort>;
 
   beforeEach(() => {
     mockUserRepo = createMock<UserRepositoryPort>();
@@ -26,6 +30,10 @@ describe('ForgotPasswordUseCase', () => {
     mockUuid = createMock<UUIDPort>();
     mockNotifier = createMock<ResetPasswordNotifierPort>();
     mockEventPublisher = createMock<EventPublisherPort>();
+    mockTxManager = createMock<TransactionManagerPort>();
+    mockTxManager.runInTransaction.mockImplementation(async (operation) =>
+      operation(),
+    );
 
     useCase = new ForgotPasswordUseCase(
       mockUserRepo,
@@ -33,6 +41,7 @@ describe('ForgotPasswordUseCase', () => {
       mockTokenRepo,
       mockUuid,
       mockNotifier,
+      mockTxManager,
       mockEventPublisher,
     );
   });

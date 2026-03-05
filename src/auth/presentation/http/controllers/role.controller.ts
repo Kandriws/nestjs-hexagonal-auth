@@ -49,7 +49,7 @@ import {
 } from '../mappers';
 import { AssignRolePermissionsDto } from '../dtos';
 import { AssignRolePermissionsPort } from 'src/auth/domain/ports/inbound';
-import { Permissions } from 'src/auth/infrastructure/decorators';
+import { Permissions } from '../decorators';
 
 @ApiTags('Roles')
 @ApiExtraModels(

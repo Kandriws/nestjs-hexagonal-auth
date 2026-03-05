@@ -44,22 +44,37 @@ export class OutboxRelayService {
     for (const event of events) {
       try {
         // TODO Phase 2: forward to RabbitMQ / SQS here
-        await this.markPublished(event.id);
+        await this.markPublished(event.id, event.attempts);
       } catch (error) {
         await this.handleFailure(event.id, event.attempts, error);
       }
     }
   }
 
-  private async markPublished(eventId: string): Promise<void> {
-    await this.prisma.outboxEvent.update({
-      where: { id: eventId },
+  private async markPublished(
+    eventId: string,
+    currentAttempts: number,
+  ): Promise<void> {
+    const updated = await this.prisma.outboxEvent.updateMany({
+      where: {
+        id: eventId,
+        status: 'PENDING',
+        attempts: currentAttempts,
+      },
       data: {
         status: 'PUBLISHED',
         publishedAt: new Date(),
+        nextAttemptAt: null,
+        errorMessage: null,
         attempts: { increment: 1 },
       },
     });
+
+    if (updated.count === 0) {
+      this.logger.debug(
+        `Skipping outbox event ${eventId} due to concurrent processing`,
+      );
+    }
   }
 
   private async handleFailure(
@@ -74,8 +89,12 @@ export class OutboxRelayService {
       this.logger.error(
         `Outbox event ${eventId} reached max attempts (${OutboxRelayService.MAX_ATTEMPTS}), marking FAILED: ${errorMessage}`,
       );
-      await this.prisma.outboxEvent.update({
-        where: { id: eventId },
+      await this.prisma.outboxEvent.updateMany({
+        where: {
+          id: eventId,
+          status: 'PENDING',
+          attempts: currentAttempts,
+        },
         data: {
           status: 'FAILED',
           attempts: nextAttempt,
@@ -93,8 +112,12 @@ export class OutboxRelayService {
       `Outbox event ${eventId} attempt ${nextAttempt} failed, retrying at ${nextAttemptAt.toISOString()}: ${errorMessage}`,
     );
 
-    await this.prisma.outboxEvent.update({
-      where: { id: eventId },
+    await this.prisma.outboxEvent.updateMany({
+      where: {
+        id: eventId,
+        status: 'PENDING',
+        attempts: currentAttempts,
+      },
       data: {
         attempts: nextAttempt,
         nextAttemptAt,

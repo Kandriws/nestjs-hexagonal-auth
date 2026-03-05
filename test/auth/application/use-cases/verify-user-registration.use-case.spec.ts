@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { VerifyUserRegistrationUseCase } from 'src/auth/application/use-cases/verify-user-registration.use-case';
 import { EventPublisherPort } from 'src/auth/domain/ports/outbound/messaging';
 import {
+  TransactionManagerPort,
   UserRepositoryPort,
   OtpRepositoryPort,
 } from 'src/auth/domain/ports/outbound/persistence';
@@ -80,6 +81,12 @@ describe('VerifyUserRegistrationUseCase', () => {
           provide: EventPublisherPort,
           useValue: {
             publish: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: TransactionManagerPort,
+          useValue: {
+            runInTransaction: jest.fn(async (operation) => operation()),
           },
         },
       ],

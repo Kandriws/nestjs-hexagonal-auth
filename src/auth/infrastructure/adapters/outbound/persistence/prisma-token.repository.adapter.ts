@@ -18,7 +18,8 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
 
   async findByTokenId(id: string): Promise<Token | null> {
     try {
-      const token = await this.prismaService.token.findUnique({
+      const prisma = this.prismaService.getClient();
+      const token = await prisma.token.findUnique({
         where: { id },
       });
 
@@ -36,7 +37,8 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
 
   async save(token: Token): Promise<void> {
     try {
-      await this.prismaService.token.create({
+      const prisma = this.prismaService.getClient();
+      await prisma.token.create({
         data: TokenMapper.toPersistence(token),
       });
     } catch {
@@ -48,7 +50,8 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
 
   async deleteByTokenId(id: string): Promise<void> {
     try {
-      await this.prismaService.token.delete({
+      const prisma = this.prismaService.getClient();
+      await prisma.token.delete({
         where: { id },
       });
     } catch (error: any) {
@@ -64,7 +67,8 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
 
   async deleteByUserId(userId: UserId): Promise<void> {
     try {
-      await this.prismaService.token.deleteMany({
+      const prisma = this.prismaService.getClient();
+      await prisma.token.deleteMany({
         where: { userId },
       });
     } catch {
@@ -104,7 +108,8 @@ export class PrismaTokenRepositoryAdapter implements TokenRepositoryPort {
 
   async markConsumedIfNotConsumed(id: string): Promise<boolean> {
     try {
-      const result = await this.prismaService.token.updateMany({
+      const prisma = this.prismaService.getClient();
+      const result = await prisma.token.updateMany({
         where: { id, consumedAt: null },
         data: { consumedAt: new Date() },
       });

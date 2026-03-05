@@ -9,14 +9,19 @@ jest.mock('src/shared/infrastructure/context/request-context', () => ({
 
 describe('OutboxEventPublisherAdapter', () => {
   let adapter: OutboxEventPublisherAdapter;
-  let prisma: { outboxEvent: { create: jest.Mock } };
+  let prisma: {
+    outboxEvent: { create: jest.Mock };
+    getClient: jest.Mock;
+  };
 
   beforeEach(async () => {
     prisma = {
       outboxEvent: {
         create: jest.fn().mockResolvedValue(undefined),
       },
+      getClient: jest.fn(),
     };
+    prisma.getClient.mockReturnValue(prisma);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

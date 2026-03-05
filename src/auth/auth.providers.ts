@@ -14,6 +14,7 @@ import {
 import {
   OtpRepositoryPort,
   TokenRepositoryPort,
+  TransactionManagerPort,
   TwoFactorSettingRepositoryPort,
 } from './domain/ports/outbound/persistence';
 import {
@@ -60,6 +61,7 @@ import {
   ResetPasswordNotifierAdapter,
 } from './infrastructure/adapters/outbound/notification';
 import { OutboxEventPublisherAdapter } from './infrastructure/adapters/outbound/messaging';
+import { PrismaService } from 'src/shared/infrastructure/prisma/prisma.service';
 
 import {
   EnableTwoFactorUseCase,
@@ -125,6 +127,10 @@ export const useCaseProviders = [
 ];
 
 export const persistenceProviders = [
+  {
+    provide: TransactionManagerPort,
+    useExisting: PrismaService,
+  },
   {
     provide: OtpRepositoryPort,
     useClass: PrismaOtpRepositoryAdapter,

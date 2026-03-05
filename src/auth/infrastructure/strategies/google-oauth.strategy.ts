@@ -3,7 +3,7 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import googleOauthConfig from '../config/google-oauth.config';
 import { ConfigType } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
-import { AuthStrategies } from './strategies.enum';
+import { AuthStrategies } from 'src/auth/constants/auth-strategies.constant';
 import { SocialLoginEmailNotVerifiedException } from 'src/auth/domain/exceptions';
 
 export class GoogleStrategy extends PassportStrategy(

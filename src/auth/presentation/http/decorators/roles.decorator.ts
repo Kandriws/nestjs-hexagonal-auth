@@ -1,9 +1,4 @@
 import { SetMetadata } from '@nestjs/common';
+import { ROLES_KEY } from 'src/auth/constants/auth-metadata-keys.constant';
 
-export const ROLES_KEY = 'roles';
-
-/**
- * Use to declare required roles for a route.
- * Example: @Roles('admin')
- */
 export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);

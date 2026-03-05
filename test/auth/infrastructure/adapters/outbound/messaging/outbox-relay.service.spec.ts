@@ -7,7 +7,7 @@ describe('OutboxRelayService', () => {
   let prisma: {
     outboxEvent: {
       findMany: jest.Mock;
-      update: jest.Mock;
+      updateMany: jest.Mock;
     };
   };
 
@@ -15,7 +15,7 @@ describe('OutboxRelayService', () => {
     prisma = {
       outboxEvent: {
         findMany: jest.fn().mockResolvedValue([]),
-        update: jest.fn().mockResolvedValue(undefined),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
     };
 
@@ -44,7 +44,7 @@ describe('OutboxRelayService', () => {
     await service.relay();
 
     expect(prisma.outboxEvent.findMany).toHaveBeenCalled();
-    expect(prisma.outboxEvent.update).not.toHaveBeenCalled();
+    expect(prisma.outboxEvent.updateMany).not.toHaveBeenCalled();
   });
 
   it('should mark pending events as PUBLISHED', async () => {
@@ -56,20 +56,32 @@ describe('OutboxRelayService', () => {
 
     await service.relay();
 
-    expect(prisma.outboxEvent.update).toHaveBeenCalledTimes(2);
-    expect(prisma.outboxEvent.update).toHaveBeenCalledWith({
-      where: { id: 'evt-1' },
+    expect(prisma.outboxEvent.updateMany).toHaveBeenCalledTimes(2);
+    expect(prisma.outboxEvent.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'evt-1',
+        status: 'PENDING',
+        attempts: 0,
+      },
       data: {
         status: 'PUBLISHED',
         publishedAt: expect.any(Date),
+        nextAttemptAt: null,
+        errorMessage: null,
         attempts: { increment: 1 },
       },
     });
-    expect(prisma.outboxEvent.update).toHaveBeenCalledWith({
-      where: { id: 'evt-2' },
+    expect(prisma.outboxEvent.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 'evt-2',
+        status: 'PENDING',
+        attempts: 0,
+      },
       data: {
         status: 'PUBLISHED',
         publishedAt: expect.any(Date),
+        nextAttemptAt: null,
+        errorMessage: null,
         attempts: { increment: 1 },
       },
     });
@@ -83,17 +95,21 @@ describe('OutboxRelayService', () => {
     };
     prisma.outboxEvent.findMany.mockResolvedValue([failingEvent]);
 
-    // Simulate publish failure by making the first update (markPublished) reject
-    prisma.outboxEvent.update
+    // Simulate publish failure by making the first updateMany (markPublished) reject
+    prisma.outboxEvent.updateMany
       .mockRejectedValueOnce(new Error('Broker unavailable'))
-      .mockResolvedValueOnce(undefined); // handleFailure update
+      .mockResolvedValueOnce({ count: 1 }); // handleFailure updateMany
 
     await service.relay();
 
-    // Second call should be the FAILED update
-    expect(prisma.outboxEvent.update).toHaveBeenCalledTimes(2);
-    expect(prisma.outboxEvent.update).toHaveBeenLastCalledWith({
-      where: { id: 'evt-fail' },
+    // Second call should be the FAILED updateMany
+    expect(prisma.outboxEvent.updateMany).toHaveBeenCalledTimes(2);
+    expect(prisma.outboxEvent.updateMany).toHaveBeenLastCalledWith({
+      where: {
+        id: 'evt-fail',
+        status: 'PENDING',
+        attempts: 4,
+      },
       data: {
         status: 'FAILED',
         attempts: 5,
@@ -110,14 +126,18 @@ describe('OutboxRelayService', () => {
     };
     prisma.outboxEvent.findMany.mockResolvedValue([failingEvent]);
 
-    prisma.outboxEvent.update
+    prisma.outboxEvent.updateMany
       .mockRejectedValueOnce(new Error('Temporary failure'))
-      .mockResolvedValueOnce(undefined);
+      .mockResolvedValueOnce({ count: 1 });
 
     await service.relay();
 
-    expect(prisma.outboxEvent.update).toHaveBeenLastCalledWith({
-      where: { id: 'evt-retry' },
+    expect(prisma.outboxEvent.updateMany).toHaveBeenLastCalledWith({
+      where: {
+        id: 'evt-retry',
+        status: 'PENDING',
+        attempts: 1,
+      },
       data: {
         attempts: 2,
         nextAttemptAt: expect.any(Date),
